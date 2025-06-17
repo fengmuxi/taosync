@@ -3,13 +3,14 @@
 @Date  ：2024/7/4 13:57 
 """
 import time
+import re
 
 import requests
 
 from common.LNG import G
 
 
-def checkExs(path, rts, spec):
+def checkExs(path, rts, spec, wantSpec):
     """
     检查并排除排除项
     :param path: 所在路径
@@ -19,12 +20,17 @@ def checkExs(path, rts, spec):
             "test1.txt": 4  # 不以/结尾，表示文件，存文件大小
         }
     :param spec: 排除规则
+    :param wantSpec: 需要规则
     :return: 排除后的内容列表
     """
     rtsNew = rts.copy()
     for rtsItem in rts.keys():
-        if spec.match_file(path + '/' + rtsItem):
-            del rtsNew[rtsItem]
+        if wantSpec and not rtsItem.endswith("/"):
+            if not re.search(wantSpec, rtsItem):
+                del rtsNew[rtsItem]
+        if spec:
+            if spec.match_file(path + '/' + rtsItem):
+                del rtsNew[rtsItem]
     return rtsNew
 
 
@@ -116,13 +122,14 @@ class AlistClient:
         """
         self.alistId = alistId
 
-    def fileListApi(self, path, useCache=0, scanInterval=0, spec=None, rootPath=None):
+    def fileListApi(self, path, useCache=0, scanInterval=0, spec=None, wantSpec=None, rootPath=None):
         """
         目录列表
         :param path: 目录，以/开头并以/结尾
         :param useCache: 是否使用缓存，0-不使用，1-使用
         :param scanInterval: 目录扫描间隔，单位秒
         :param spec: 排除项规则
+        :param wantSpec: 需要项规则
         :return: {
             "test1-1/": {},  # key以/结尾表示目录
             "test1.txt": 4  # 不以/结尾，表示文件，存文件大小
@@ -147,10 +154,10 @@ class AlistClient:
             }
         else:
             rts = {}
-        if spec and rts:
+        if (spec or wantSpec) and rts:
             if rootPath is None:
                 rootPath = path
-            rts = checkExs(path[len(rootPath):], rts, spec)
+            rts = checkExs(path[len(rootPath):], rts, spec, wantSpec)
         return rts
 
     def filePathList(self, path):
@@ -333,3 +340,44 @@ class AlistClient:
         self.post('/api/admin/task/copy/cancel', params={
             'tid': taskId
         })
+
+    def getFileApi(self, path, useCache=0, scanInterval=0):
+        """
+        获取文件信息
+        :param path: 目录，以/开头并以/结尾
+        :param useCache: 是否使用缓存，0-不使用，1-使用
+        :param scanInterval: 目录扫描间隔，单位秒
+        :return: {
+            "name": "Alist V3.md",
+            "size": 2618,
+            "is_dir": false,
+            "modified": "2024-05-17T16:05:36.4651534+08:00",
+            "created": "2024-05-17T16:05:29.2001008+08:00",
+            "sign": "",
+            "thumb": "",
+            "type": 4,
+            "hashinfo": "null",
+            "hash_info": null,
+            "raw_url": "http://127.0.0.1:5244/p/local/Alist%20V3.md",
+            "readme": "",
+            "header": "",
+            "provider": "Local",
+            "related": null
+        }
+        """
+        if scanInterval != 0:
+            pathFirst = path.split('/', maxsplit=2)[1]
+            if pathFirst in self.waits:
+                timeC = time.time() - self.waits[pathFirst]
+                if timeC < scanInterval:
+                    time.sleep(scanInterval - timeC)
+            self.waits[pathFirst] = time.time()
+        res = self.post('/api/fs/get', data={
+            'path': path,
+            'refresh': useCache != 1
+        })
+        if res is not None:
+            rts = res
+        else:
+            rts = {}
+        return rts

@@ -52,6 +52,9 @@ def init_sql(conn):
                        "start_date text DEFAULT NULL,"      # 开始时间
                        "end_date text DEFAULT NULL,"        # 结束时间
                        "exclude text DEFAULT NULL,"         # 排除无需同步项，类似gitignore语法，英文冒号分隔多个规则
+                       "possess text DEFAULT NULL,"         # 筛选需要同步项，类似gitignore语法，英文冒号分隔多个规则
+                       "strm_nfo text DEFAULT NULL,"        # 筛选strm刮削文件同步项，类似gitignore语法，英文冒号分隔多个规则
+                       "strm_path text DEFAULT NULL,"       # strm文件保存路径
                        "createTime integer DEFAULT (strftime('%s', 'now')),"
                        " unique (srcPath, dstPath, alistId))")
         cursor.execute("create table job_task("
@@ -136,6 +139,9 @@ def init_sql(conn):
                 cursor.execute("alter table job add column scanIntervalT integer DEFAULT 0")
                 cursor.execute("alter table job add column useCacheS integer DEFAULT 0")
                 cursor.execute("alter table job add column scanIntervalS integer DEFAULT 0")
+                cursor.execute("alter table job add column possess text DEFAULT NULL")
+                cursor.execute("alter table job add column strm_nfo text DEFAULT NULL")
+                cursor.execute("alter table job add column strm_path text DEFAULT NULL")
                 cursor.execute("update job set scanIntervalT = 10, useCacheT = 0 where useCacheT = 2")
             cursor.execute(f"update user_list set sqlVersion={cuVersion}")
             conn.commit()

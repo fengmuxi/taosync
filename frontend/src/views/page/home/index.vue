@@ -19,7 +19,7 @@
 								同步方式
 							</div>
 							<div class="form-box-item-value">
-								{{props.row.method == 0 ? '仅新增' : (props.row.method == 1 ? '全同步': '移动模式')}}
+								{{props.row.method == 0 ? '仅新增' : (props.row.method == 1 ? '全同步': (props.row.method == 2 ? '移动模式': 'strm模式'))}}
 							</div>
 						</div>
 						<div class="form-box-item">
@@ -77,6 +77,30 @@
 								</template>
 							</div>
 						</div>
+            <div class="form-box-item">
+              <div class="form-box-item-label">
+                文件匹配正则
+              </div>
+              <div class="form-box-item-value">
+                {{props.row.possess}}
+              </div>
+            </div>
+            <div class="form-box-item" v-if="props.row.method == 3">
+              <div class="form-box-item-label">
+                刮削文件匹配正则
+              </div>
+              <div class="form-box-item-value">
+                {{props.row.strm_nfo}}
+              </div>
+            </div>
+            <div class="form-box-item" v-if="props.row.method == 3">
+              <div class="form-box-item-label">
+                strm文件保存路径
+              </div>
+              <div class="form-box-item-value">
+                {{props.row.strm_path}}
+              </div>
+            </div>
 						<div class="form-box-item">
 							<div class="form-box-item-label">
 								创建时间
@@ -213,6 +237,10 @@
 									<span style="float: left;margin-right: 16px;">移动模式</span>
 									<span style="float: right; color: #7b9dad; font-size: 13px;">同步完成后删除源目录所有文件</span>
 								</el-option>
+                <el-option label="strm文件生成模式" :value="3">
+                  <span style="float: left;margin-right: 16px;">strm文件生成模式</span>
+                  <span style="float: right; color: #7b9dad; font-size: 13px;">新增目标目录没有的strm文件并同步刮削信息</span>
+                </el-option>
 							</el-select>
 						</el-form-item>
 						<el-form-item prop="useCacheT" label="目标目录扫描缓存">
@@ -251,6 +279,16 @@
 								<template slot="append">秒</template>
 							</el-input>
 						</el-form-item>
+            <el-form-item prop="possess" label="匹配项正则表达式">
+              <el-input v-model.number="editData.possess" placeholder="匹配项正则表达式"
+                        class="label_width">
+              </el-input>
+            </el-form-item>
+            <el-form-item prop="strm_nfo" label="刮削文件正则表达式" v-if="editData.method == 3">
+              <el-input v-model.number="editData.strm_nfo" placeholder="strm刮削文件正则表达式"
+                        class="label_width">
+              </el-input>
+            </el-form-item>
 						<el-form-item prop="exclude" label="排除项语法">
 							<div class="label_width">类gitignore<br />
 								<span @click="toIgnore" class="to-link">
@@ -273,6 +311,11 @@
 								</div>
 							</div>
 						</el-form-item>
+            <el-form-item prop="strm_path" label="str生成目录" v-if="editData.method == 3">
+              <el-input v-model.number="editData.strm_path" placeholder="str生成目录"
+                        class="label_width">
+              </el-input>
+            </el-form-item>
 						<span v-if="editData.method == 2"
 							style="margin-top: -12px;margin-left: 410px;margin-bottom: 18px;color: #f56c6c;font-weight: bold;">移动模式存在风险，可能导致文件丢失（因为会删除源目录文件），该方法应仅用于不重要的文件或有多重备份的文件！希望你知道自己在做什么！</span>
 						<el-form-item prop="isCron" label="调用方式">
@@ -552,7 +595,10 @@
 					method: 0,
 					interval: 1440,
 					isCron: 0,
-					exclude: []
+					exclude: [],
+          possess: '',
+          strm_nfo: '',
+          strm_path: ''
 				}
 				this.cronList.forEach(item => {
 					editData[item.label] = null;
@@ -608,6 +654,10 @@
 								return
 							}
 						}
+            if (postData.method == 3 && postData.strm_path == ''){
+              this.$message.error("请添加strm文件生成路径");
+              return
+            }
 						postData.dstPath = postData.dstPath.join(':');
 						postData.exclude = postData.exclude.join(':');
 						this.editLoading = true;

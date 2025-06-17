@@ -7,6 +7,9 @@ import json
 import logging
 import threading
 import time
+import os
+import re
+from pathlib import Path
 from collections import defaultdict
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -309,6 +312,9 @@ class JobTask:
         """
         srcPath = self.job['srcPath']
         jobExclude = self.job['exclude']
+        wantSpec = self.job['possess']
+        strmSpec = self.job['strm_nfo']
+        strmPath = self.job['strm_path']
         spec = None
         if jobExclude is not None:
             spec = PathSpec.from_lines(GitWildMatchPattern, jobExclude.split(':'))
@@ -318,7 +324,7 @@ class JobTask:
         i = 0
         for dstItem in dstPathList:
             i += 1
-            self.syncWithHave(srcPath, dstItem, spec, srcPath, dstItem, i == 1)
+            self.syncWithHave(srcPath, dstItem, spec, wantSpec, strmSpec, strmPath, srcPath, dstItem, i == 1)
         self.scanFinish = True
 
     def copyFile(self, srcPath, dstPath, fileName, fileSize):
@@ -362,7 +368,7 @@ class JobTask:
             errMsg = str(e)
         self.delHook(path, fileName, None if isPath else size, status, errMsg, isPath, createTime)
 
-    def listDir(self, path, firstDst, spec, rootPath, isSrc=True):
+    def listDir(self, path, firstDst, spec, wantSpec, rootPath, isSrc=True):
         """
         列出目录
         self.job['useCacheT']: 扫描目标目录时，是否使用缓存，0-不使用，1-使用
@@ -372,6 +378,7 @@ class JobTask:
         :param path:
         :param firstDst: 是否是第一个目标目录（如果是，将完整扫描源目录，否则使用缓存扫描源目录）
         :param spec:
+        :param wantSpec:
         :param rootPath:
         :param isSrc:
         :return:
@@ -379,7 +386,7 @@ class JobTask:
         useCache = 1 if isSrc and not firstDst else self.job[f"useCache{'S' if isSrc else 'T'}"]
         scanInterval = self.job[f"scanInterval{'S' if isSrc else 'T'}"]
         try:
-            return self.alistClient.fileListApi(path, useCache, scanInterval, spec, rootPath)
+            return self.alistClient.fileListApi(path, useCache, scanInterval, spec, wantSpec, rootPath)
         except Exception as e:
             logger = logging.getLogger()
             errMsg = G('scan_error').format(G('src' if isSrc else 'dst'), str(e))
@@ -389,12 +396,143 @@ class JobTask:
                           isPath=1)
             raise e
 
-    def syncWithHave(self, srcPath, dstPath, spec, srcRootPath, dstRootPath, firstDst):
+    def getFileInfo(self, path, firstDst, spec, wantSpec, rootPath, isSrc=True):
+        """
+        列出目录
+        self.job['useCacheT']: 扫描目标目录时，是否使用缓存，0-不使用，1-使用
+        self.job['scanIntervalT']: 目标目录扫描间隔，单位秒
+        self.job['useCacheS']: 扫描源目录时，是否使用缓存，0-不使用，1-使用
+        self.job['scanIntervalS']: 源目录扫描间隔，单位秒
+        :param path:
+        :param firstDst: 是否是第一个目标目录（如果是，将完整扫描源目录，否则使用缓存扫描源目录）
+        :param spec:
+        :param wantSpec:
+        :param rootPath:
+        :param isSrc:
+        :return:
+        """
+        useCache = 1 if isSrc and not firstDst else self.job[f"useCache{'S' if isSrc else 'T'}"]
+        scanInterval = self.job[f"scanInterval{'S' if isSrc else 'T'}"]
+        try:
+            return self.alistClient.getFileApi(path, useCache, scanInterval, spec, wantSpec, rootPath)
+        except Exception as e:
+            logger = logging.getLogger()
+            errMsg = G('get_file_info_error').format(G('src' if isSrc else 'dst'), str(e))
+            logger.error(errMsg)
+            logger.exception(e)
+            self.copyHook(path if isSrc else None, None if isSrc else path, None, None, status=7, errMsg=errMsg,
+                          isPath=1)
+            raise e
+
+    def smart_extension_replace(self, path, new_extension):
+        """智能后缀替换，处理多种情况"""
+        path = Path(path)
+
+        # 处理点号开头问题
+        new_extension = new_extension.strip()
+        if new_extension and not new_extension.startswith('.'):
+            new_extension = '.' + new_extension
+
+        # 特殊情况处理
+        if new_extension == '.':
+            new_extension = ''  # 移除所有扩展名
+
+        # 替换后缀
+        return path.with_suffix(new_extension)
+
+    def replace_in_path(self, src_path, old_string, new_string):
+        """处理字符串或Path对象的替换函数"""
+        # 统一转换为字符串
+        src_str = str(src_path)
+        old_str = str(old_string)
+        new_str = str(new_string)
+
+        return src_str.replace(old_str, new_str)
+
+    def create_strm_path(self, strmPath, srcPath, srcRootPath, strmName):
+        """
+        创建STRM文件路径（完整修复版本）
+
+        :param strmPath: STRM文件基础目录
+        :param srcPath: 源媒体文件路径
+        :param srcRootPath: 要替换的根路径部分
+        :param strmName: STRM文件名（含扩展名）
+        :return: 完整的STRM文件路径（Path对象）
+        """
+        # 安全处理所有路径输入
+        base_path = Path(strmPath)
+        src_path = Path(srcPath) if not isinstance(srcPath, Path) else srcPath
+        src_root = Path(srcRootPath) if not isinstance(srcRootPath, Path) else srcRootPath
+
+        # 获取相对路径部分并进行替换
+        relative_part = self.replace_in_path(src_path, src_root, '')
+
+        # 清理路径中的多余斜杠
+        relative_part = relative_part.replace('\\', '/').strip('/')
+
+        # 构建目标路径（使用Path操作符）
+        strm_path = base_path / relative_part / strmName
+
+        return strm_path
+
+    def create_strm_file(self, strmPath, srcPath, srcRootPath, strmName, raw_url):
+        """
+        创建STRM文件路径（完整修复版本）
+
+        :param strmPath: STRM文件基础目录
+        :param srcPath: 源媒体文件路径
+        :param srcRootPath: 要替换的根路径部分
+        :param strmName: STRM文件名（含扩展名）
+        :return: 完整的STRM文件路径（Path对象）
+        """
+        logger = logging.getLogger()
+        # 分离目录和文件名
+        try:
+            strm_path = self.create_strm_path(strmPath, srcPath, srcRootPath, strmName)
+            logger.info(f'strm保存信息路径{strm_path},保存内容{raw_url}')
+            # 创建父目录（如果需要）
+            Path(strm_path).parent.mkdir(parents=True, exist_ok=True)
+
+            # 写入文件
+            with open(strm_path, "w", encoding="utf-8") as f:
+                f.write(raw_url)
+            logger.info(f"文件已成功保存到: {strm_path}")
+            logger.info(f"文件大小: {os.path.getsize(strm_path)} 字节")
+
+        except PermissionError as e:
+            errMsg = G('strm_file_error').format(G('src'), '错误：没有写入权限，请尝试其他目录', str(e))
+            logger.error(errMsg)
+            logger.exception(e)
+            self.copyHook(srcPath, None, None, None, status=7,
+                          errMsg=errMsg,
+                          isPath=1)
+            raise e
+        except FileNotFoundError as e:
+            errMsg = G('strm_file_error').format(G('src'), '错误：路径无效，请检查格式', str(e))
+            logger.error(errMsg)
+            logger.exception(e)
+            self.copyHook(srcPath, None, None, None, status=7,
+                          errMsg=errMsg,
+                          isPath=1)
+            raise e
+        except Exception as e:
+            errMsg = G('strm_file_error').format(G('src'), '发生未知错误', str(e))
+            logger.error(errMsg)
+            logger.exception(e)
+            self.copyHook(srcPath, None, None, None, status=7,
+                          errMsg=errMsg,
+                          isPath=1)
+            raise e
+
+    def syncWithHave(self, srcPath, dstPath, spec, wantSpec, strmSpec, strmPath, srcRootPath, dstRootPath, firstDst):
         """
         扫描并同步-目标目录存在目录（意味着要继续扫描目标目录）
         :param srcPath: 来源路径，以/结尾
         :param dstPath: 目标路径，以/结尾
         :param spec: 排除项规则
+        :param wantSpec: 需要项规则
+        :param strmSpec: strm刮削项规则
+        :param strmPath: strm文件存放地址
         :param srcRootPath: 来源目录根目录，以/结尾
         :param dstRootPath: 目标目录根目录，以/结尾
         :param firstDst: 是否是第一个目标目录（如果是，将完整扫描源目录，否则使用缓存扫描源目录）
@@ -403,38 +541,63 @@ class JobTask:
         if self.job is None or self.job['enable'] == 0:
             return
         try:
-            srcFiles = self.listDir(srcPath, firstDst, spec, srcRootPath)
-            dstFiles = self.listDir(dstPath, firstDst, spec, dstRootPath, False)
+            srcFiles = self.listDir(srcPath, firstDst, spec, wantSpec, srcRootPath)
+            dstFiles = self.listDir(dstPath, firstDst, spec, wantSpec, dstRootPath, False)
         except Exception:
             # 已在listDir做出日志打印等操作，此处啥都不用做
             return
         for key in srcFiles.keys():
             # 如果是文件
             if not key.endswith('/'):
-                # 目标目录没有这个文件或文件大小不匹配(即需要同步)
-                if key not in dstFiles or dstFiles[key] != srcFiles[key]:
-                    self.copyFile(srcPath, dstPath, key, srcFiles[key])
+                if self.job['method'] == 3:
+                    logger = logging.getLogger()
+                    if strmSpec:
+                        logger.info(f'存在下载规则{strmSpec}正在为{key}匹配......')
+                        if re.search(strmSpec, key):
+                            logger.info(f'{key}符合下载文件正则')
+                            # 目标目录没有这个文件或文件大小不匹配(即需要同步)
+                            if key not in dstFiles or dstFiles[key] != srcFiles[key]:
+                                logger.info(f'{key}目标目录没有这个文件或文件大小不匹配(即需要同步)')
+                                self.copyFile(srcPath, dstPath, key, srcFiles[key])
+
+                    strmName = self.smart_extension_replace(key, '.strm')
+                    logger.info(f'strm文件名{strmName}')
+                    if strmName not in dstFiles:
+                        logger.info(f'不存在{strmName}开始创建......')
+                        # fileInfo = self.getFileInfo(srcPath + key, firstDst, spec, wantSpec, srcRootPath)
+                        # raw_url = fileInfo['raw_url']
+                        raw_url = self.alistClient.url + '/d' + srcPath + key
+                        self.create_strm_file(strmPath, srcPath, srcRootPath, strmName, raw_url)
+                    else:
+                        logger.info(f'存在strm文件{strmName}跳过生成......')
+                else:
+                    # 目标目录没有这个文件或文件大小不匹配(即需要同步)
+                    if key not in dstFiles or dstFiles[key] != srcFiles[key]:
+                        self.copyFile(srcPath, dstPath, key, srcFiles[key])
             # 如果是目录
             else:
                 # 目标目录没有这个目录
                 if key not in dstFiles:
-                    self.syncWithOutHave(srcPath + key, dstPath + key, spec, srcRootPath, dstRootPath,
-                                         firstDst)
+                    self.syncWithOutHave(srcPath + key, dstPath + key, spec, wantSpec, strmSpec, strmPath, srcRootPath, dstRootPath,
+                                             firstDst)
                 # 目标目录有这个目录，继续递归
                 else:
-                    self.syncWithHave(srcPath + key, dstPath + key, spec, srcRootPath, dstRootPath,
-                                      firstDst)
+                    self.syncWithHave(srcPath + key, dstPath + key, spec, wantSpec, strmSpec, strmPath, srcRootPath, dstRootPath,
+                                          firstDst)
         if self.job['method'] == 1:
             for dstKey in dstFiles.keys():
                 if dstKey not in srcFiles:
                     self.delFile(dstPath, dstKey, dstFiles[dstKey])
 
-    def syncWithOutHave(self, srcPath, dstPath, spec, srcRootPath, dstRootPath, firstDst):
+    def syncWithOutHave(self, srcPath, dstPath, spec, wantSpec, strmSpec, strmPath, srcRootPath, dstRootPath, firstDst):
         """
         扫描并同步-目标目录为空
         :param srcPath: 来源路径，以/结尾
         :param dstPath: 目标路径，以/结尾
         :param spec:
+        :param wantSpec:
+        :param strmSpec: strm刮削项规则
+        :param strmPath: strm文件存放地址
         :param srcRootPath:
         :param dstRootPath:
         :param firstDst:
@@ -454,15 +617,31 @@ class JobTask:
         if status != 2:
             return
         try:
-            srcFiles = self.listDir(srcPath, firstDst, spec, srcRootPath)
+            srcFiles = self.listDir(srcPath, firstDst, spec, wantSpec, srcRootPath)
         except Exception:
             # 已在listDir做出日志打印等操作，此处啥都不用做
             return
         for key in srcFiles.keys():
             if key.endswith('/'):
-                self.syncWithOutHave(srcPath + key, dstPath + key, spec, srcRootPath, dstRootPath, firstDst)
+                self.syncWithOutHave(srcPath + key, dstPath + key, spec, wantSpec, strmSpec, strmPath, srcRootPath, dstRootPath, firstDst)
             else:
-                self.copyFile(srcPath, dstPath, key, srcFiles[key])
+                if self.job['method'] == 3:
+                    logger = logging.getLogger()
+                    if strmSpec:
+                        logger.info(f'存在下载规则{strmSpec}正在为{key}匹配......')
+                        if re.search(strmSpec, key):
+                            logger.info(f'{key}符合下载文件正则直接下载')
+                            # 目标目录没有这个文件或文件大小不匹配(即需要同步)
+                            self.copyFile(srcPath, dstPath, key, srcFiles[key])
+
+                    # fileInfo = self.getFileInfo(srcPath + key, firstDst, spec, wantSpec, srcRootPath)
+                    # raw_url = fileInfo['raw_url']
+                    strmName = self.smart_extension_replace(key, '.strm')
+                    logger.info(f'strm文件名{strmName}')
+                    raw_url = self.alistClient.url + '/d' + srcPath + key
+                    self.create_strm_file(strmPath, srcPath, srcRootPath, strmName, raw_url)
+                else:
+                    self.copyFile(srcPath, dstPath, key, srcFiles[key])
 
     def updateTaskStatus(self):
         """

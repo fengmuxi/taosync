@@ -2,26 +2,26 @@
 	border-right: none;
 	background-color: #001529;
 	color: #FFFFFF;
-	
+
 	.el-menu-item:not(.is-active) {
 		color: #CCCCCC;
 	}
-	
+
 	.el-menu-item:hover {
 		color: #FFFFFF;
 		background-color: #001529;
 		background-image: linear-gradient(90deg, #0f83fc, transparent) !important;
 	}
-	
+
 	.el-menu-item.is-active {
 		color: #FFFFFF;
 		background-image: linear-gradient(90deg, #0f83fc, transparent) !important;
 	}
-	
+
 	.el-menu-item:hover:not(.is-active) {
 		color: #FFFFFF;
 	}
-	
+
 	.el-menu-item:focus {
 		background-color: #001529;
 	}
@@ -55,7 +55,7 @@
 	border: 1px solid #09122d;
 	color: #909bd4;
 	border-left: none;
-	
+
 	.el-button {
 		border: none !important;
 	}
@@ -122,19 +122,19 @@
 .el-select-dropdown {
 	background-color: #191b2c;
 	border: 1px solid #474856;
-	
+
 	.el-select-dropdown__item.hover, .el-select-dropdown__item:hover {
 		background-color: #191b2c;
 	}
-	
+
 	.el-select-dropdown__item.selected {
 		color: #409EFF;
 	}
-	
+
 	.el-select-dropdown__item {
 		color: #C0C4CC;
 	}
-	
+
 	.el-select-dropdown__item.is-disabled {
 		color: #606266;
 	}
@@ -150,11 +150,11 @@
 	background: #191b2c;
 	border: 1px solid #474856;
 	color: #FFFFFF;
-	
+
 	.el-tree-node__content:hover {
 		background-color:#00315f !important;
 	}
-	
+
 	.el-tree-node.is-current>.el-tree-node__content {
 		background-color:#00315f !important;
 	}
@@ -164,24 +164,24 @@
 	background: #191b2c;
 	border: 1px solid #474856;
 	color: #FFFFFF;
-	
+
 	.el-picker-panel__icon-btn {
 		color: #FFFFFF;
 	}
-	
+
 	.el-date-picker__header-label {
 		color: #FFFFFF;
 	}
-	
+
 	.el-date-table th {
 		color: #FFFFFF;
 	}
-	
+
 	.el-date-table td.disabled div {
 		background-color: #001529;
 		color: #606266;
 	}
-	
+
 	td.next-month, td.prev-month {
 		color: #888888;
 	}
@@ -205,27 +205,27 @@
 
 .el-table {
 	color: #FFFFFF;
-	
+
 	thead {
 		color: #FFFFFF;
 	}
-	
+
 	tbody tr:hover>td {
 		background-color:#001529 !important;
 	}
-	
+
 	tr {
 		background-color: #292b3c;
 	}
-	
+
 	th.el-table__cell {
 		background-color: #292b3c;
 	}
-	
+
 	td.el-table__cell, th.el-table__cell.is-leaf {
 		border-bottom: 1px solid #001529;
 	}
-	
+
 	.el-table__expand-icon {
 		color: #FFFFFF;
 	}
@@ -249,7 +249,7 @@
 
 .el-pagination {
 	color: #FFFFFF;
-	
+
 	button:disabled {
 		background-color: #19203b;
 		color: #556266;
@@ -257,28 +257,28 @@
 	li {
 		background-color: #19203b;
 	}
-	
+
 	li.btn-quicknext, li.btn-quickprev {
 		color: #FFFFFF;
 	}
-	
+
 	.btn-next, .btn-prev {
 		background: center center no-repeat #19203b;
 		color: #FFFFFF;
 	}
-	
+
 	.el-pagination__total, .el-pagination__jump {
 		color: #FFFFFF;
 	}
-	
+
 	.el-pagination__total {
 		margin-right: 2px;
 	}
-	
+
 	.el-pagination__jump {
 		margin-left: 10px;
 	}
-	
+
 	.el-pagination__sizes {
 		margin: 0 2px 0 0;
 	}
@@ -286,15 +286,15 @@
 
 .el-dialog {
 	background-color: #292b3c;
-	
+
 	.el-dialog__title {
 		color: #FFFFFF;
 	}
-	
+
 	.el-dialog__headerbtn .el-dialog__close {
 		color: #FFFFFF;
 	}
-	
+
 	.el-dialog__body {
 		color: #FFFFFF;
 	}
@@ -309,17 +309,17 @@
 .el-message-box {
 	background-color: #292b3c;
 	border: 1px solid #001529;
-	
+
 	.el-message-box__title {
 		color: #FFFFFF;
 	}
-	
+
 	.el-message-box__headerbtn {
 		.el-message-box__close {
 			color: #FFFFFF;
 		}
 	}
-	
+
 	.el-message-box__content {
 		color: #FFFFFF;
 	}
@@ -327,7 +327,7 @@
 
 .el-progress-bar__outer {
 	border-radius: 4px;
-	
+
 	.el-progress-bar__inner {
 		border-radius: 4px;
 	}
@@ -344,11 +344,11 @@
 		border: none;
 		border-bottom: 1px solid #001529;
 	}
-	
+
 	.el-collapse-item__wrap {
 		background-color: #001529;
 		border-bottom: #001529;
-		
+
 		.el-collapse-item__content {
 			padding-bottom: 0;
 			color: #FFFFFF;
@@ -400,13 +400,13 @@
 	align-items: center;
 	margin: 4px 0;
 	margin-right: 30px;
-	
+
 	.common-form-label {
 		min-width: 70px;
 		text-align: right;
 		color: #909bd4;
 	}
-	
+
 	.common-form-value {
 		margin-left: 16px;
 		font-weight: 800;
@@ -469,7 +469,7 @@
 
 		.form-box-item-label {
 			font-size: 16px;
-			width: 110px;
+			width: 150px;
 			text-align: right;
 			margin-right: 18px;
 			color: #909bd4;

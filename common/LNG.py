@@ -57,7 +57,8 @@ allLng = {
         'hms': '{} 小时 {} 分 {} 秒',
         'task_end_msg_error': '失败原因为：{}',
         'notify_error': '发送通知过程中失败，原因为：{}',
-        'notify_test_msg': '这是一条由您自己发送的TaoSync测试消息，当你看到这条消息，说明你的配置是正确可用的。'
+        'notify_test_msg': '这是一条由您自己发送的TaoSync测试消息，当你看到这条消息，说明你的配置是正确可用的。',
+        'strm_file_error': '获取生成strm文件失败来源目录为：{} 提示信息：{} 原因为：{}'
     },
     'eng': {
         'success': 'success',
@@ -113,7 +114,8 @@ allLng = {
         'task_end_msg_error': 'Failed due to {}',
         'notify_error': 'Failed to send notification due to: {}',
         'notify_test_msg': 'This is a TaoSync test message sent by yourself. '
-                           'When you see this message, it means your configuration is correct and available.'
+                           'When you see this message, it means your configuration is correct and available.',
+        'strm_file_error': 'Failed to obtain the source directory for generating the Strm file：{} msg：{} Failed due to：{}'
     }
 }
 
