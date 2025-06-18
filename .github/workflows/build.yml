@@ -7,7 +7,7 @@ on:
 
 env:
   APP_NAME: taoSync
-  DOCKER_USER: dr34m
+  DOCKER_USER: ${{ secrets.DOCKERHUB_NAME }}
   DOCKER_NAME: tao-sync
 
 jobs:
