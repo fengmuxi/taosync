@@ -45,14 +45,17 @@ class CopyItem:
 
     def doIt(self):
         try:
-            self.alistTaskId = self.alistClient.copyFile(self.srcPath, self.dstPath, self.fileName)
+            if self.jobTask.breakFlag:
+                self.status = 4
+            else:
+                self.alistTaskId = self.alistClient.copyFile(self.srcPath, self.dstPath, self.fileName)
         except Exception as e:
             self.errMsg = str(e)
             self.status = 7
         else:
             if self.alistTaskId is None:
                 self.status = 2
-            else:
+            elif self.status != 4:
                 self.checkAndGetStatus()
         self.endIt()
 
@@ -62,6 +65,16 @@ class CopyItem:
         :return:
         """
         while True:
+            if self.jobTask.breakFlag:
+                self.status = 4
+                if self.alistTaskId is not None:
+                    try:
+                        self.alistClient.copyTaskCancel(self.alistTaskId)
+                        self.alistClient.copyTaskDelete(self.alistTaskId)
+                    except Exception as e:
+                        self.status = 7
+                        self.errMsg = str(e)
+                break
             cuTime = time.time()
             time.sleep(0.61 if cuTime - self.jobTask.lastWatching < 3 else 2.93)
             try:
@@ -93,7 +106,7 @@ class CopyItem:
     def endIt(self):
         if self.copyType == 2 and self.status == 2:
             try:
-                self.alistClient.deleteFile(self.srcPath, [self.fileName])
+                self.alistClient.deleteFile(self.srcPath, [self.fileName], self.jobTask.job['scanIntervalS'])
             except Exception as e:
                 self.status = 7
                 self.errMsg = G('copy_success_but_delete_fail').format(str(e))
@@ -107,7 +120,7 @@ class JobTask:
         """
         作业任务类
         :param taskId: 任务id
-        :param job: 作业信息
+        :param vm: 作业上下文
         """
         self.taskId = taskId
         self.jobClient = vm
@@ -128,6 +141,8 @@ class JobTask:
         self.scanFinish = False
         # 首个文件开始同步时间
         self.firstSync = None
+        # 手动中止标识
+        self.breakFlag = False
         syncThread = threading.Thread(target=self.sync)
         syncThread.start()
         self.currentTasks = {}
@@ -149,9 +164,35 @@ class JobTask:
             'createTime': 创建时间
         }
         :return: {
-            0: [],
-            1: [],
-            ...
+            'scanFinish': True,
+            'doingTask': [{
+                'srcPath': 来源目录,
+                'dstPath': 目标目录,
+                'fileName': 文件名,
+                'fileSize': 文件大小,
+                'status': 状态,
+                'type': 方式，0-复制（对于目录则是创建），1-删除，2-移动,
+                'progress': 进度,
+                'errMsg': 错误信息,
+                'createTime': 创建时间
+            }],
+            'createTime': int(self.createTime),
+            'duration': int(self.lastWatching - self.createTime),
+            'firstSync': int(self.firstSync) if self.firstSync is not None else None,
+            'num': {
+                'wait': 0,
+                'running': 1,
+                'success': 2,
+                'fail': 7,
+                'other': 0
+            },
+            'size': {
+                'wait': 0,
+                'running': 1,
+                'success': 2,
+                'fail': 7,
+                'other': 0
+            }
         }
         """
         self.lastWatching = time.time()
@@ -228,11 +269,15 @@ class JobTask:
         :return:
         """
         while True:
+            if self.breakFlag:
+                break
             time.sleep(0.5)
             doingNums = len(self.doing.keys())
             waitingNums = len(self.waiting)
             if not self.scanFinish or doingNums != 0 or waitingNums != 0:
                 while doingNums < 20:
+                    if self.breakFlag:
+                        break
                     if waitingNums == 0:
                         break
                     else:
@@ -245,6 +290,12 @@ class JobTask:
                         doingNums = len(self.doing.keys())
                         waitingNums = len(self.waiting)
             else:
+                break
+        tryTime = 0
+        while len(self.doing.keys()) > 0:
+            tryTime += 1
+            time.sleep(.5)
+            if tryTime > 3:
                 break
         jobMapper.addJobTaskItemMany(self.finish)
         self.updateTaskStatus()
@@ -339,7 +390,7 @@ class JobTask:
         :param fileSize: 文件大小
         :return:
         """
-        if self.job is None or self.job['enable'] == 0:
+        if self.breakFlag:
             return
         copyItem = CopyItem(srcPath, dstPath, fileName, fileSize, self.job['method'], self)
         self.waiting.append(copyItem)
@@ -347,22 +398,22 @@ class JobTask:
     def delFile(self, path, fileName, size):
         """
         删除文件（或目录）
-        vm.job['method']: 0-仅新增，1-全同步，2-移动模式
-        vm.job['copyHook']: 复制文件回调，（srcPath, dstPath, name, size, alistTaskId=None, status=0, errMsg=None, isPath=0）
-        vm.job['delHook']: 删除文件回调，（dstPath, name, size, status=2:2-成功、7-失败, errMsg=None, isPath=0）
+        self.job['method']: 0-仅新增，1-全同步，2-移动模式
+        self.copyHook: 复制文件回调，（srcPath, dstPath, name, size, alistTaskId=None, status=0, errMsg=None, isPath=0, createTime）More actions
+        self.delHook: 删除文件回调，（dstPath, name, size, status=2:2-成功、7-失败, errMsg=None, isPath=0, createTime）
         :param path: 所在路径
         :param fileName: 文件名（或目录名）
         :param size: 大小（文件）或空对象（目录）
         :return:
         """
-        if self.job is None or self.job['enable'] == 0:
+        if self.breakFlag:
             return
         isPath = fileName.endswith('/')
         status = 2
         errMsg = None
         createTime = int(time.time())
         try:
-            self.alistClient.deleteFile(path, [fileName if not isPath else fileName[:-1]])
+            self.alistClient.deleteFile(path, [fileName if not isPath else fileName[:-1]], self.job['scanIntervalT'])
         except Exception as e:
             status = 7
             errMsg = str(e)
@@ -538,7 +589,7 @@ class JobTask:
         :param firstDst: 是否是第一个目标目录（如果是，将完整扫描源目录，否则使用缓存扫描源目录）
         :return:
         """
-        if self.job is None or self.job['enable'] == 0:
+        if self.breakFlag:
             return
         try:
             srcFiles = self.listDir(srcPath, firstDst, spec, wantSpec, srcRootPath)
@@ -603,12 +654,12 @@ class JobTask:
         :param firstDst:
         :return:
         """
-        if self.job is None or self.job['enable'] == 0:
+        if self.breakFlag:
             return
         status = 2
         errMsg = None
         try:
-            self.alistClient.mkdir(dstPath)
+            self.alistClient.mkdir(dstPath, self.job['scanIntervalT'])
         except Exception as e:
             status = 7
             errMsg = str(e)
@@ -622,6 +673,8 @@ class JobTask:
             # 已在listDir做出日志打印等操作，此处啥都不用做
             return
         for key in srcFiles.keys():
+            if self.breakFlag:
+                break
             if key.endswith('/'):
                 self.syncWithOutHave(srcPath + key, dstPath + key, spec, wantSpec, strmSpec, strmPath, srcRootPath, dstRootPath, firstDst)
             else:
@@ -649,7 +702,7 @@ class JobTask:
         """
         self.getCurrent()
         failOrOtherNum = len(self.currentTasks[7]) + len(self.currentTasks[-1])
-        status = 2 if failOrOtherNum == 0 else 3
+        status = 7 if self.breakFlag else 2 if failOrOtherNum == 0 else 3
         taskService.updateJobTaskStatus(self.taskId, status, taskList=self.currentTasks, createTime=self.createTime)
 
 
@@ -712,8 +765,11 @@ class JobClient:
                 'jobId': self.jobId,
                 'runTime': int(time.time())
             })
+            if self.job['enable'] == 0:
+                raise Exception("abort")
             self.currentJobTask = JobTask(taskId, self)
         except Exception as e:
+            self.jobDoing = False
             logger = logging.getLogger()
             errMsg = G('do_job_err').format(str(e))
             logger.error(errMsg)
@@ -771,6 +827,14 @@ class JobClient:
             self.job['enable'] = 1
             self.scheduledJob.resume()
 
+    def abortJob(self):
+        """
+        中止作业
+        :return:
+        """
+        if self.currentJobTask:
+            self.currentJobTask.breakFlag = True
+
     def stopJob(self, remove=False):
         """
         停止作业（适用于修改enable）
@@ -778,6 +842,8 @@ class JobClient:
         :return:
         """
         self.job['enable'] = 0
+        if self.currentJobTask:
+            self.currentJobTask.breakFlag = True
         if remove:
             if self.scheduled is not None:
                 try:
