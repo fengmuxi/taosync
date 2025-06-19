@@ -115,6 +115,49 @@ class CopyItem:
         del self.jobTask.doing[self.doingKey]
 
 
+class CreateStrmItem:
+    def __init__(self, strmPath, srcPath, srcRootPath, strmName, raw_url, jobTask):
+        self.jobTask = jobTask
+        self.taskId = self.jobTask.taskId
+        self.srcPath = srcPath
+        self.dstPath = strmPath
+        self.srcRootPath = srcRootPath
+        self.copyType = 3
+        self.fileName = strmName
+        self.fileSize = 0
+        self.raw_url = raw_url
+        self.alistTaskId = None
+        self.status = 0
+        self.progress = 0.0
+        self.errMsg = None
+        self.createTime = int(time.time())
+        self.doingKey = None
+
+    def doByThread(self):
+        doThread = threading.Thread(target=self.doIt)
+        doThread.start()
+
+    def doIt(self):
+        try:
+            if self.jobTask.breakFlag:
+                self.status = 4
+            else:
+                self.alistTaskId = self.jobTask.create_strm_file(self.dstPath, self.srcPath,
+                                                                 self.srcRootPath, self.fileName, self.raw_url)
+        except Exception as e:
+            self.errMsg = str(e)
+            self.status = 7
+        else:
+            if self.alistTaskId:
+                self.status = 2
+        self.endIt()
+
+    def endIt(self):
+        self.jobTask.copyHook(self.srcPath, self.dstPath, self.fileName, self.fileSize, self.alistTaskId, self.status,
+                              errMsg=self.errMsg, copyType=self.copyType, createTime=self.createTime)
+        del self.jobTask.doing[self.doingKey]
+
+
 class JobTask:
     def __init__(self, taskId, vm):
         """
@@ -244,6 +287,8 @@ class JobTask:
             else:
                 currentTasks[status] = tasks
         currentTasks[-1] = otk
+        for key in currentTasks.keys():
+            currentTasks[key] = currentTasks[key][::-1]
         self.currentTasks = currentTasks
         result = {
             'scanFinish': self.scanFinish,
@@ -419,7 +464,7 @@ class JobTask:
             errMsg = str(e)
         self.delHook(path, fileName, None if isPath else size, status, errMsg, isPath, createTime)
 
-    def listDir(self, path, firstDst, spec, wantSpec, rootPath, isSrc=True):
+    def listDir(self, path, firstDst, spec, wantSpec, strmSpec, rootPath, isSrc=True):
         """
         列出目录
         self.job['useCacheT']: 扫描目标目录时，是否使用缓存，0-不使用，1-使用
@@ -430,6 +475,7 @@ class JobTask:
         :param firstDst: 是否是第一个目标目录（如果是，将完整扫描源目录，否则使用缓存扫描源目录）
         :param spec:
         :param wantSpec:
+        :param strmSpec: 刮削文件规则
         :param rootPath:
         :param isSrc:
         :return:
@@ -437,7 +483,7 @@ class JobTask:
         useCache = 1 if isSrc and not firstDst else self.job[f"useCache{'S' if isSrc else 'T'}"]
         scanInterval = self.job[f"scanInterval{'S' if isSrc else 'T'}"]
         try:
-            return self.alistClient.fileListApi(path, useCache, scanInterval, spec, wantSpec, rootPath)
+            return self.alistClient.fileListApi(path, useCache, scanInterval, spec, wantSpec, strmSpec, rootPath)
         except Exception as e:
             logger = logging.getLogger()
             errMsg = G('scan_error').format(G('src' if isSrc else 'dst'), str(e))
@@ -489,7 +535,7 @@ class JobTask:
             new_extension = ''  # 移除所有扩展名
 
         # 替换后缀
-        return path.with_suffix(new_extension)
+        return str(path.with_suffix(new_extension))
 
     def replace_in_path(self, src_path, old_string, new_string):
         """处理字符串或Path对象的替换函数"""
@@ -536,11 +582,11 @@ class JobTask:
         :param strmName: STRM文件名（含扩展名）
         :return: 完整的STRM文件路径（Path对象）
         """
+        msg = None
         logger = logging.getLogger()
-        # 分离目录和文件名
         try:
             strm_path = self.create_strm_path(strmPath, srcPath, srcRootPath, strmName)
-            logger.info(f'strm保存信息路径{strm_path},保存内容{raw_url}')
+            logger.info(f'strm保存信息路径[{strm_path}],保存内容[{raw_url}]')
             # 创建父目录（如果需要）
             Path(strm_path).parent.mkdir(parents=True, exist_ok=True)
 
@@ -549,6 +595,7 @@ class JobTask:
                 f.write(raw_url)
             logger.info(f"文件已成功保存到: {strm_path}")
             logger.info(f"文件大小: {os.path.getsize(strm_path)} 字节")
+            msg = str(strm_path)
 
         except PermissionError as e:
             errMsg = G('strm_file_error').format(G('src'), '错误：没有写入权限，请尝试其他目录', str(e))
@@ -556,24 +603,37 @@ class JobTask:
             logger.exception(e)
             self.copyHook(srcPath, None, None, None, status=7,
                           errMsg=errMsg,
-                          isPath=1)
-            raise e
+                          isPath=0)
         except FileNotFoundError as e:
             errMsg = G('strm_file_error').format(G('src'), '错误：路径无效，请检查格式', str(e))
             logger.error(errMsg)
             logger.exception(e)
             self.copyHook(srcPath, None, None, None, status=7,
                           errMsg=errMsg,
-                          isPath=1)
-            raise e
+                          isPath=0)
         except Exception as e:
             errMsg = G('strm_file_error').format(G('src'), '发生未知错误', str(e))
             logger.error(errMsg)
             logger.exception(e)
             self.copyHook(srcPath, None, None, None, status=7,
                           errMsg=errMsg,
-                          isPath=1)
-            raise e
+                          isPath=0)
+        finally:
+            return msg
+
+    def createFile(self, strmPath, srcPath, srcRootPath, strmName, raw_url):
+        """
+        创建文件
+        :param srcPath: 源目录
+        :param dstPath: 目标目录
+        :param fileName: 文件名
+        :param fileSize: 文件大小
+        :return:
+        """
+        if self.breakFlag:
+            return
+        createStrmItem = CreateStrmItem(strmPath, srcPath, srcRootPath, strmName, raw_url, self)
+        self.waiting.append(createStrmItem)
 
     def syncWithHave(self, srcPath, dstPath, spec, wantSpec, strmSpec, strmPath, srcRootPath, dstRootPath, firstDst):
         """
@@ -592,8 +652,8 @@ class JobTask:
         if self.breakFlag:
             return
         try:
-            srcFiles = self.listDir(srcPath, firstDst, spec, wantSpec, srcRootPath)
-            dstFiles = self.listDir(dstPath, firstDst, spec, wantSpec, dstRootPath, False)
+            srcFiles = self.listDir(srcPath, firstDst, spec, wantSpec, strmSpec, srcRootPath)
+            dstFiles = self.listDir(dstPath, firstDst, spec, wantSpec, strmSpec, dstRootPath, False)
         except Exception:
             # 已在listDir做出日志打印等操作，此处啥都不用做
             return
@@ -603,24 +663,31 @@ class JobTask:
                 if self.job['method'] == 3:
                     logger = logging.getLogger()
                     if strmSpec:
-                        logger.info(f'存在下载规则{strmSpec}正在为{key}匹配......')
+                        logger.info(f'存在下载规则{strmSpec}正在为[{key}]匹配......')
                         if re.search(strmSpec, key):
-                            logger.info(f'{key}符合下载文件正则')
+                            logger.info(f'[{key}]符合下载文件正则')
                             # 目标目录没有这个文件或文件大小不匹配(即需要同步)
                             if key not in dstFiles or dstFiles[key] != srcFiles[key]:
-                                logger.info(f'{key}目标目录没有这个文件或文件大小不匹配(即需要同步)')
+                                logger.info(f'[{key}]目标目录没有这个文件或文件大小不匹配(即需要同步)')
                                 self.copyFile(srcPath, dstPath, key, srcFiles[key])
+                        else:
+                            logger.info(f'[{key}]不符合下载文件正则')
 
-                    strmName = self.smart_extension_replace(key, '.strm')
-                    logger.info(f'strm文件名{strmName}')
-                    if strmName not in dstFiles:
-                        logger.info(f'不存在{strmName}开始创建......')
-                        # fileInfo = self.getFileInfo(srcPath + key, firstDst, spec, wantSpec, srcRootPath)
-                        # raw_url = fileInfo['raw_url']
-                        raw_url = self.alistClient.url + '/d' + srcPath + key
-                        self.create_strm_file(strmPath, srcPath, srcRootPath, strmName, raw_url)
-                    else:
-                        logger.info(f'存在strm文件{strmName}跳过生成......')
+                    if wantSpec:
+                        if re.search(wantSpec, key):
+                            strmName = self.smart_extension_replace(key, '.strm')
+                            logger.info(f'strm文件名[{strmName}]')
+                            if strmName not in dstFiles:
+                                logger.info(f'不存在[{strmName}]开始创建......')
+                                # fileInfo = self.getFileInfo(srcPath + key, firstDst, spec, wantSpec, srcRootPath)
+                                # raw_url = fileInfo['raw_url']
+                                strm_url_prefix = self.alistClient.url
+                                if self.job['strm_url_prefix']:
+                                    strm_url_prefix = self.job['strm_url_prefix']
+                                raw_url = strm_url_prefix + '/d' + srcPath + key
+                                self.createFile(strmPath, srcPath, srcRootPath, strmName, raw_url)
+                            else:
+                                logger.info(f'存在strm文件[{strmName}]跳过生成......')
                 else:
                     # 目标目录没有这个文件或文件大小不匹配(即需要同步)
                     if key not in dstFiles or dstFiles[key] != srcFiles[key]:
@@ -629,12 +696,14 @@ class JobTask:
             else:
                 # 目标目录没有这个目录
                 if key not in dstFiles:
-                    self.syncWithOutHave(srcPath + key, dstPath + key, spec, wantSpec, strmSpec, strmPath, srcRootPath, dstRootPath,
-                                             firstDst)
+                    self.syncWithOutHave(srcPath + key, dstPath + key, spec, wantSpec, strmSpec, strmPath, srcRootPath,
+                                         dstRootPath,
+                                         firstDst)
                 # 目标目录有这个目录，继续递归
                 else:
-                    self.syncWithHave(srcPath + key, dstPath + key, spec, wantSpec, strmSpec, strmPath, srcRootPath, dstRootPath,
-                                          firstDst)
+                    self.syncWithHave(srcPath + key, dstPath + key, spec, wantSpec, strmSpec, strmPath, srcRootPath,
+                                      dstRootPath,
+                                      firstDst)
         if self.job['method'] == 1:
             for dstKey in dstFiles.keys():
                 if dstKey not in srcFiles:
@@ -668,7 +737,7 @@ class JobTask:
         if status != 2:
             return
         try:
-            srcFiles = self.listDir(srcPath, firstDst, spec, wantSpec, srcRootPath)
+            srcFiles = self.listDir(srcPath, firstDst, spec, wantSpec, strmSpec, srcRootPath)
         except Exception:
             # 已在listDir做出日志打印等操作，此处啥都不用做
             return
@@ -676,7 +745,8 @@ class JobTask:
             if self.breakFlag:
                 break
             if key.endswith('/'):
-                self.syncWithOutHave(srcPath + key, dstPath + key, spec, wantSpec, strmSpec, strmPath, srcRootPath, dstRootPath, firstDst)
+                self.syncWithOutHave(srcPath + key, dstPath + key, spec, wantSpec, strmSpec, strmPath, srcRootPath,
+                                     dstRootPath, firstDst)
             else:
                 if self.job['method'] == 3:
                     logger = logging.getLogger()
@@ -689,10 +759,15 @@ class JobTask:
 
                     # fileInfo = self.getFileInfo(srcPath + key, firstDst, spec, wantSpec, srcRootPath)
                     # raw_url = fileInfo['raw_url']
-                    strmName = self.smart_extension_replace(key, '.strm')
-                    logger.info(f'strm文件名{strmName}')
-                    raw_url = self.alistClient.url + '/d' + srcPath + key
-                    self.create_strm_file(strmPath, srcPath, srcRootPath, strmName, raw_url)
+                    if wantSpec:
+                        if re.search(wantSpec, key):
+                            strmName = self.smart_extension_replace(key, '.strm')
+                            logger.info(f'strm文件名{strmName}')
+                            strm_url_prefix = self.alistClient.url
+                            if self.job['strm_url_prefix']:
+                                strm_url_prefix = self.job['strm_url_prefix']
+                            raw_url = strm_url_prefix + '/d' + srcPath + key
+                            self.createFile(strmPath, srcPath, srcRootPath, strmName, raw_url)
                 else:
                     self.copyFile(srcPath, dstPath, key, srcFiles[key])
 

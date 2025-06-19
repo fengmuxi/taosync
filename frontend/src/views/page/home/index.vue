@@ -101,6 +101,14 @@
                 {{props.row.strm_path}}
               </div>
             </div>
+            <div class="form-box-item" v-if="props.row.method == 3">
+              <div class="form-box-item-label">
+                strm文件内容前缀
+              </div>
+              <div class="form-box-item-value">
+                {{props.row.strm_url_prefix}}
+              </div>
+            </div>
 						<div class="form-box-item">
 							<div class="form-box-item-label">
 								创建时间
@@ -313,6 +321,11 @@
 						</el-form-item>
             <el-form-item prop="strm_path" label="str生成目录" v-if="editData.method == 3">
               <el-input v-model.number="editData.strm_path" placeholder="str生成目录"
+                        class="label_width">
+              </el-input>
+            </el-form-item>
+            <el-form-item prop="strm_path" label="strm文件内容前缀" v-if="editData.method == 3">
+              <el-input v-model.number="editData.strm_url_prefix" placeholder="strm文件内容前缀"
                         class="label_width">
               </el-input>
             </el-form-item>
@@ -598,7 +611,8 @@
 					exclude: [],
           possess: '',
           strm_nfo: '',
-          strm_path: ''
+          strm_path: '',
+          strm_url_prefix: ''
 				}
 				this.cronList.forEach(item => {
 					editData[item.label] = null;
@@ -806,9 +820,11 @@
 					padding: 0 6px;
 					line-height: 20px;
 					margin-right: -4px;
+          max-width: 180px;
 				}
 
 				.el-button {
+          margin-left: 10px;
 					border-radius: 0 3px 3px 0;
 				}
 			}

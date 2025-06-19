@@ -183,7 +183,7 @@
 			startRefresh() {
 				this.timer = setInterval(() => {
 					this.getCurrent();
-				}, 610);
+				}, 5000);
 			},
 			endRefresh() {
 				if (this.timer) {

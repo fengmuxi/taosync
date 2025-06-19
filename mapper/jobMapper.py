@@ -47,11 +47,11 @@ def addJob(job):
     return sqlBase.execute_insert("insert into job (enable, remark, srcPath, dstPath, alistId, useCacheT, "
                                   "scanIntervalT, useCacheS, scanIntervalS, method, interval"
                                   ",isCron, year, month, day, week, day_of_week, hour, minute, second, "
-                                  "start_date, end_date, exclude, possess, strm_nfo, strm_path) "
+                                  "start_date, end_date, exclude, possess, strm_nfo, strm_path, strm_url_prefix) "
                                   "VALUES (:enable, :remark, :srcPath, :dstPath, :alistId, :useCacheT, "
                                   ":scanIntervalT, :useCacheS, :scanIntervalS, :method, :interval, "
                                   ":isCron, :year, :month, :day, :week, :day_of_week, :hour, :minute, :second, "
-                                  ":start_date, :end_date, :exclude, :possess, :strm_nfo, :strm_path)", job)
+                                  ":start_date, :end_date, :exclude, :possess, :strm_nfo, :strm_path, :strm_url_prefix)", job)
 
 
 def updateJob(job):
@@ -61,7 +61,7 @@ def updateJob(job):
                            "method=:method, interval=:interval, isCron=:isCron, year=:year, "
                            "month=:month, day=:day, week=:week, day_of_week=:day_of_week, hour=:hour, minute=:minute, "
                            "second=:second, start_date=:start_date, end_date=:end_date, exclude=:exclude, possess=:possess, "
-                           "strm_nfo=:strm_nfo, strm_path=:strm_path  where id=:id",
+                           "strm_nfo=:strm_nfo, strm_path=:strm_path, strm_url_prefix=:strm_url_prefix  where id=:id",
                            job)
 
 

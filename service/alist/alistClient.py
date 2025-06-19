@@ -10,7 +10,7 @@ import requests
 from common.LNG import G
 
 
-def checkExs(path, rts, spec, wantSpec):
+def checkExs(path, rts, spec, wantSpec, strmSpec):
     """
     检查并排除排除项
     :param path: 所在路径
@@ -20,17 +20,40 @@ def checkExs(path, rts, spec, wantSpec):
             "test1.txt": 4  # 不以/结尾，表示文件，存文件大小
         }
     :param spec: 排除规则
+    :param strmSpec: 刮削文件规则
     :param wantSpec: 需要规则
     :return: 排除后的内容列表
     """
     rtsNew = rts.copy()
     for rtsItem in rts.keys():
-        if wantSpec and not rtsItem.endswith("/"):
-            if not re.search(wantSpec, rtsItem):
-                del rtsNew[rtsItem]
+        spec_del = True
+        want_spec_del = True
+        strm_spec_del = True
+        strm_del = True
+        file_del = True
+        # 匹配不扫描文件存在不保留
         if spec:
-            if spec.match_file(path + '/' + rtsItem):
-                del rtsNew[rtsItem]
+            if not spec.match_file(path + rtsItem):
+                spec_del = False
+        else:
+            spec_del = False
+        if not rtsItem.endswith("/"):
+            # 匹配需要生成strm文件存在保留
+            if wantSpec:
+                if re.search(wantSpec, rtsItem):
+                    want_spec_del = False
+            # 匹配刮削文件存在保留
+            if strmSpec:
+                if re.search(strmSpec, rtsItem):
+                    strm_spec_del = False
+            # 匹配strm文件存在保留
+            if re.search("\.(strm)$", rtsItem):
+                strm_del = False
+        else:
+            file_del = False
+        # 判断删除内容
+        if spec_del or (want_spec_del and strm_spec_del and strm_del and file_del):
+            del rtsNew[rtsItem]
     return rtsNew
 
 
@@ -139,7 +162,7 @@ class AlistClient:
                     return
             self.waits[pathFirst] = time.time()
 
-    def fileListApi(self, path, useCache=0, scanInterval=0, spec=None, wantSpec=None, rootPath=None):
+    def fileListApi(self, path, useCache=0, scanInterval=0, spec=None, wantSpec=None, strmSpec=None, rootPath=None):
         """
         目录列表
         :param path: 目录，以/开头并以/结尾
@@ -147,6 +170,7 @@ class AlistClient:
         :param scanInterval: 目录扫描间隔，单位秒
         :param spec: 排除项规则
         :param wantSpec: 需要项规则
+        :param strmSpec: 刮削文件规则
         :return: {
             "test1-1/": {},  # key以/结尾表示目录
             "test1.txt": 4  # 不以/结尾，表示文件，存文件大小
@@ -168,7 +192,7 @@ class AlistClient:
         if (spec or wantSpec) and rts:
             if rootPath is None:
                 rootPath = path
-            rts = checkExs(path[len(rootPath):], rts, spec, wantSpec)
+            rts = checkExs(path[len(rootPath):], rts, spec, wantSpec, strmSpec)
         return rts
 
     def filePathList(self, path):
@@ -186,13 +210,14 @@ class AlistClient:
         else:
             return []
 
-    def allFileList(self, path, useCache=0, scanInterval=0, spec=None, rootPath=None):
+    def allFileList(self, path, useCache=0, scanInterval=0, spec=None, strmSpec=None, rootPath=None):
         """
         递归获取文件列表，暂时弃用
         :param path: 根路径
         :param useCache: 是否使用缓存，0-不使用，1-使用
         :param scanInterval: 目录扫描间隔，单位秒
         :param spec: 排除项规则
+        :param strmSpec: 刮削文件规则
         :param rootPath: 同步根目录
         :return: {
             "test1-1/": {
@@ -206,10 +231,10 @@ class AlistClient:
         """
         if rootPath is None:
             rootPath = path
-        fList = self.fileListApi(path, useCache, scanInterval, spec, rootPath)
+        fList = self.fileListApi(path, useCache, scanInterval, spec, strmSpec, rootPath)
         for key in fList.keys():
             if key.endswith('/'):
-                fList[key] = self.allFileList(f"{path}/{key[:-1]}", useCache, scanInterval, spec, rootPath)
+                fList[key] = self.allFileList(f"{path}/{key[:-1]}", useCache, scanInterval, spec, strmSpec, rootPath)
         return fList
 
     def mkdir(self, path, scanInterval=0):

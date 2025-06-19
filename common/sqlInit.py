@@ -4,7 +4,7 @@ from common import sqlBase
 
 @sqlBase.connect_sql
 def init_sql(conn):
-    cuVersion = 250608
+    cuVersion = 250618
     cursor = conn.cursor()
     cursor.execute("SELECT name FROM sqlite_master WHERE name='user_list'")
     passwd = None
@@ -55,6 +55,7 @@ def init_sql(conn):
                        "possess text DEFAULT NULL,"         # 筛选需要同步项，类似gitignore语法，英文冒号分隔多个规则
                        "strm_nfo text DEFAULT NULL,"        # 筛选strm刮削文件同步项，类似gitignore语法，英文冒号分隔多个规则
                        "strm_path text DEFAULT NULL,"       # strm文件保存路径
+                       "strm_url_prefix text DEFAULT NULL," # strm文件保存内容前缀
                        "createTime integer DEFAULT (strftime('%s', 'now')),"
                        " unique (srcPath, dstPath, alistId))")
         cursor.execute("create table job_task("
@@ -143,6 +144,8 @@ def init_sql(conn):
                 cursor.execute("alter table job add column strm_nfo text DEFAULT NULL")
                 cursor.execute("alter table job add column strm_path text DEFAULT NULL")
                 cursor.execute("update job set scanIntervalT = 10, useCacheT = 0 where useCacheT = 2")
+            if sqlVersion < 250618:
+                cursor.execute("alter table job add column strm_url_prefix text DEFAULT NULL")
             cursor.execute(f"update user_list set sqlVersion={cuVersion}")
             conn.commit()
     cursor.close()
