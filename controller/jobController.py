@@ -45,7 +45,7 @@ class Job(BaseHandler):
     def get(self, req):
         if 'id' in req:
             if 'current' in req:
-                return jobService.getJobCurrent(req['id'], req.get('status', None))
+                return jobService.getJobCurrent(req['id'], req.get('status', None), int(req.get('pageNum', 1)), int(req.get('pageSize', 10)))
             return taskService.getTaskList(req)
         elif 'taskId' in req:
             return taskService.getTaskItemList(req)

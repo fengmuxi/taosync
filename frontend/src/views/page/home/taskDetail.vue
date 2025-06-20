@@ -13,6 +13,7 @@
 					<el-option label="复制/创建" :value="0"></el-option>
 					<el-option label="删除" :value="1"></el-option>
 					<el-option label="移动" :value="2"></el-option>
+					<el-option label="strm创建" :value="3"></el-option>
 				</el-select>
 			</div>
 			<div class="top-box-title">任务详情</div>
@@ -41,7 +42,7 @@
 			return {
 				taskItemData: {
 					dataList: [],
-					conut: 0
+          count: 0
 				},
 				params: {
 					taskId: null,

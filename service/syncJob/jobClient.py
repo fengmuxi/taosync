@@ -288,11 +288,11 @@ class JobTask:
                 currentTasks[status] = tasks
         currentTasks[-1] = otk
         for key in currentTasks.keys():
-            currentTasks[key] = currentTasks[key][::-1]
+            currentTasks[key] = list(reversed(currentTasks[key]))
         self.currentTasks = currentTasks
         result = {
             'scanFinish': self.scanFinish,
-            'doingTask': currentTasks[1],
+            'doingTask': self.currentTasks[1],
             'createTime': int(self.createTime),
             'duration': int(self.lastWatching - self.createTime),
             'firstSync': int(self.firstSync) if self.firstSync is not None else None,
@@ -305,8 +305,8 @@ class JobTask:
                 item['fileSize'] for item in currentTasks[val] if item['fileSize'] is not None and item['type'] != 1)
         return result
 
-    def getCurrentByStatus(self, status):
-        return self.currentTasks[status]
+    def getCurrentByStatus(self, status, pageNum=1, pageSize=10):
+        return self.advanced_paginate(self.currentTasks[status], page=pageNum, page_size=pageSize)
 
     def taskSubmit(self):
         """
@@ -803,6 +803,61 @@ class JobTask:
         failOrOtherNum = len(self.currentTasks[7]) + len(self.currentTasks[-1])
         status = 7 if self.breakFlag else 2 if failOrOtherNum == 0 else 3
         taskService.updateJobTaskStatus(self.taskId, status, taskList=self.currentTasks, createTime=self.createTime)
+
+    def advanced_paginate(self, data: list, page: int = 1, page_size: int = 10,
+                          allow_empty: bool = False, include_all: bool = False) -> dict:
+        """
+        高级列表分页函数
+
+        参数:
+            data: 需要分页的数据列表
+            page: 当前页码(默认为1)
+            page_size: 每页大小(默认10)
+            allow_empty: 是否允许返回空页(默认False，返回最后一页)
+            include_all: 是否添加所有数据的总列表(默认False)
+        """
+        total_items = len(data)
+
+        # 处理无效输入
+        if page < 1 or page_size < 1 or not isinstance(data, list):
+            raise ValueError("Invalid input parameters")
+
+        # 计算总页数
+        total_pages = max(1, (total_items + page_size - 1) // page_size)  # 确保至少有1页
+
+        # 处理超出范围的页码
+        if page > total_pages:
+            if allow_empty:
+                return {
+                    'data': [],
+                    'page': page,
+                    'page_size': page_size,
+                    'total_pages': total_pages,
+                    'total_items': total_items
+                }
+            else:
+                page = total_pages  # 返回最后一页
+
+        # 计算分页切片
+        start = (page - 1) * page_size
+        end = min(start + page_size, total_items)  # 防止索引越界
+
+        # 构建返回结果
+        result = {
+            'data': data[start:end],
+            'page': page,
+            'page_size': page_size,
+            'total_pages': total_pages,
+            'total_items': total_items,
+            'start_index': start + 1,  # 基于1的起始索引
+            'end_index': end,  # 结束索引
+        }
+
+        # 可选：包含完整数据(谨慎使用，大数据集可能影响性能)
+        if include_all:
+            result['all_data'] = data.copy()
+
+        return result
 
 
 class JobClient:

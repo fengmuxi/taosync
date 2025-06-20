@@ -79,7 +79,7 @@
 							其他
 						</div>
 					</div>
-					<taskDetailTable class="current-box-task-right" :taskItemData="toTable" @pageChange="pageChange">
+					<taskDetailTable class="current-box-task-right" :taskItemData="cuTaskInfo" @pageChange="pageChange">
 					</taskDetailTable>
 				</div>
 			</div>
@@ -129,6 +129,10 @@
 				timer: null,
 				cuTaskSelect: 1,
 				cuTaskList: [],
+        cuTaskInfo: {
+          dataList: [],
+          count: 0
+        },
 				toTableParams: {
 					pageSize: 10,
 					pageNum: 1
@@ -237,9 +241,13 @@
 				this.loadingTask = true;
 				jobGetTaskCurrent({
 					id: this.jobId,
-					status: this.cuTaskSelect
+					status: this.cuTaskSelect,
+          pageNum: this.toTableParams.pageNum,
+          pageSize: this.toTableParams.pageSize,
 				}).then(res => {
-					this.cuTaskList = res.data;
+          this.cuTaskInfo.dataList = res.data.data;
+          this.cuTaskInfo.count = res.data.total_items;
+					this.cuTaskList = this.cuTaskInfo.dataList;
 					this.loadingTask = false;
 				}).catch(err => {
 					setTimeout(() => {
@@ -286,6 +294,7 @@
 			},
 			pageChange(val) {
 				this.toTableParams = val;
+        this.getTaskList();
 			},
 			formatSeconds(seconds) {
 				const days = Math.floor(seconds / (24 * 3600));
