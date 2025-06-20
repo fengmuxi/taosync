@@ -4,6 +4,7 @@ import logging
 
 from common.LNG import G
 from common.config import getConfig
+from logging.handlers import RotatingFileHandler
 
 
 # 日志规定
@@ -32,7 +33,22 @@ def setLogger(cusLevel=None):
         logger.addHandler(handlerStream)
     if handlersLen > 1:
         logger.removeHandler(logger.handlers[1])
-    handlerFile = logging.FileHandler(log_file, encoding='utf-8')
+    # 处理文件日志处理器 - 使用 RotatingFileHandler 替代 FileHandler
+    max_bytes = cfg['server'].get('log_max_bytes', 10 * 1024 * 1024)  # 默认为10MB
+    backup_count = cfg['server'].get('log_backup_count', 20)  # 默保留20个备份文件
+
+    # 查找并移除现有的文件日志处理器
+    for handler in logger.handlers[:]:
+        if isinstance(handler, (logging.FileHandler, RotatingFileHandler)):
+            logger.removeHandler(handler)
+
+    # 创建新的轮转文件处理器
+    handlerFile = RotatingFileHandler(
+        filename=log_file,
+        encoding='utf-8',
+        maxBytes=max_bytes,
+        backupCount=backup_count
+    )
     handlerFile.setLevel(level)
     formatter = logging.Formatter('%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s')
     handlerFile.setFormatter(formatter)

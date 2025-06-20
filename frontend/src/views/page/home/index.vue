@@ -109,6 +109,22 @@
                 {{props.row.strm_url_prefix}}
               </div>
             </div>
+            <div class="form-box-item" v-if="props.row.method == 3">
+              <div class="form-box-item-label">
+                同步刮削文件到源目录
+              </div>
+              <div class="form-box-item-value">
+                {{props.row.strm_src_sync == 0?'否':'是'}}
+              </div>
+            </div>
+            <div class="form-box-item" v-if="props.row.method == 3">
+              <div class="form-box-item-label">
+                同步文件删除本地strm
+              </div>
+              <div class="form-box-item-value">
+                {{props.row.strm_dst_sync == 0?'否':'是'}}
+              </div>
+            </div>
 						<div class="form-box-item">
 							<div class="form-box-item-label">
 								创建时间
@@ -179,9 +195,9 @@
 			</el-pagination>
 		</div>
 		<el-dialog top="5vh" :close-on-click-modal="false" :visible.sync="editShow" :append-to-body="true"
-			:title="`${editData && editData.id != null ? '编辑' : '新增'}作业`" width="820px" :before-close="closeShow">
+			:title="`${editData && editData.id != null ? '编辑' : '新增'}作业`" width="900px" :before-close="closeShow">
 			<div class="elform-box">
-				<el-form :model="editData" :rules="addRule" ref="jobRule" v-if="editShow" label-width="150px">
+				<el-form :model="editData" :rules="addRule" ref="jobRule" v-if="editShow" label-width="180px">
 					<div style="display: flex;flex-wrap: wrap;">
 						<el-form-item prop="enable" label="是否启用">
 							<div class="label_width">
@@ -324,10 +340,20 @@
                         class="label_width">
               </el-input>
             </el-form-item>
-            <el-form-item prop="strm_path" label="strm文件内容前缀" v-if="editData.method == 3">
+            <el-form-item prop="strm_url_prefix" label="strm文件内容前缀" v-if="editData.method == 3">
               <el-input v-model.number="editData.strm_url_prefix" placeholder="strm文件内容前缀"
                         class="label_width">
               </el-input>
+            </el-form-item>
+            <el-form-item prop="strm_src_sync" label="同步刮削文件到源目录" v-if="editData.method == 3">
+              <div class="label_width">
+                <el-switch v-model="editData.strm_src_sync" :active-value="1" :inactive-value="0"></el-switch>
+              </div>
+            </el-form-item>
+            <el-form-item prop="strm_dst_sync" label="同步文件删除本地strm" v-if="editData.method == 3">
+              <div class="label_width">
+                <el-switch v-model="editData.strm_dst_sync" :active-value="1" :inactive-value="0"></el-switch>
+              </div>
             </el-form-item>
 						<span v-if="editData.method == 2"
 							style="margin-top: -12px;margin-left: 410px;margin-bottom: 18px;color: #f56c6c;font-weight: bold;">移动模式存在风险，可能导致文件丢失（因为会删除源目录文件），该方法应仅用于不重要的文件或有多重备份的文件！希望你知道自己在做什么！</span>
@@ -612,7 +638,9 @@
           possess: '',
           strm_nfo: '',
           strm_path: '',
-          strm_url_prefix: ''
+          strm_url_prefix: '',
+          strm_src_sync: 0,
+          strm_dst_sync: 0
 				}
 				this.cronList.forEach(item => {
 					editData[item.label] = null;

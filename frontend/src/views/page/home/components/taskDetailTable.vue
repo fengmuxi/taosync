@@ -45,7 +45,7 @@
 			<el-table-column prop="type" label="操作类型" width="90">
 				<template slot-scope="scope">
 					<div :class="`bg-status bg-${scope.row.type ? '3' : '8'}`" style="width: 50px;">
-						{{scope.row.type == 0 ? (scope.row.isPath ? '创建' : '复制') : (scope.row.type == 1 ? '删除' : '移动')}}
+						{{scope.row.type == 0 ? (scope.row.isPath ? '创建' : '复制') : (scope.row.type == 3 ? '创建' : (scope.row.type == 1 ? '删除' : '移动'))}}
 					</div>
 				</template>
 			</el-table-column>

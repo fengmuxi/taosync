@@ -657,28 +657,52 @@ class JobTask:
         except Exception:
             # 已在listDir做出日志打印等操作，此处啥都不用做
             return
+        logger = logging.getLogger()
+        # 判断将刮削文件同步至源目录
+        if self.job['method'] == 3 and self.job['strm_src_sync'] == 1 and strmSpec:
+            for key in dstFiles.keys():
+                # 如果是文件
+                if not key.endswith('/') and re.search(strmSpec, key):
+                    logger.info(f'[{dstPath + key}]符合刮削文件同步正则')
+                    # 目标目录没有这个文件或文件大小不匹配(即需要同步)
+                    if key not in srcFiles:
+                        logger.info(f'[{dstPath + key}]源目录没有这个文件(即需要同步)')
+                        self.copyFile(dstPath, srcPath, key, dstFiles[key])
+
+        # 判断删除目标目录在源目录不存在的文件
+        if self.job['method'] == 3 and self.job['strm_dst_sync'] == 1:
+            for dstKey in dstFiles.keys():
+                if dstKey not in srcFiles:
+                    logger.info(f'[{dstPath + dstKey}]源目录没有这个文件或文件夹需要删除')
+                    if dstKey.endswith('/'):
+                        logger.info(f'[{dstPath + dstKey}]源目录没有这个文件夹删除')
+                        self.delFile(dstPath, dstKey, dstFiles[dstKey])
+                    else:
+                        if re.search("\.(strm)$", dstKey):
+                            logger.info(f'[{dstPath + dstKey}]源目录没有这个strm文件删除')
+                            self.delFile(dstPath, dstKey, dstFiles[dstKey])
+
         for key in srcFiles.keys():
             # 如果是文件
             if not key.endswith('/'):
                 if self.job['method'] == 3:
-                    logger = logging.getLogger()
                     if strmSpec:
-                        logger.info(f'存在下载规则{strmSpec}正在为[{key}]匹配......')
+                        logger.info(f'存在下载规则{strmSpec}正在为[{srcPath + key}]匹配......')
                         if re.search(strmSpec, key):
-                            logger.info(f'[{key}]符合下载文件正则')
+                            logger.info(f'[{srcPath + key}]符合下载文件正则')
                             # 目标目录没有这个文件或文件大小不匹配(即需要同步)
                             if key not in dstFiles or dstFiles[key] != srcFiles[key]:
-                                logger.info(f'[{key}]目标目录没有这个文件或文件大小不匹配(即需要同步)')
+                                logger.info(f'[{srcPath + key}]目标目录没有这个文件或文件大小不匹配(即需要同步)')
                                 self.copyFile(srcPath, dstPath, key, srcFiles[key])
                         else:
-                            logger.info(f'[{key}]不符合下载文件正则')
+                            logger.info(f'[{srcPath + key}]不符合下载文件正则')
 
                     if wantSpec:
                         if re.search(wantSpec, key):
                             strmName = self.smart_extension_replace(key, '.strm')
-                            logger.info(f'strm文件名[{strmName}]')
+                            logger.info(f'strm文件名[{srcPath + strmName}]')
                             if strmName not in dstFiles:
-                                logger.info(f'不存在[{strmName}]开始创建......')
+                                logger.info(f'不存在[{srcPath + strmName}]开始创建......')
                                 # fileInfo = self.getFileInfo(srcPath + key, firstDst, spec, wantSpec, srcRootPath)
                                 # raw_url = fileInfo['raw_url']
                                 strm_url_prefix = self.alistClient.url
@@ -687,7 +711,7 @@ class JobTask:
                                 raw_url = strm_url_prefix + '/d' + srcPath + key
                                 self.createFile(strmPath, srcPath, srcRootPath, strmName, raw_url)
                             else:
-                                logger.info(f'存在strm文件[{strmName}]跳过生成......')
+                                logger.info(f'存在strm文件[{srcPath + strmName}]跳过生成......')
                 else:
                     # 目标目录没有这个文件或文件大小不匹配(即需要同步)
                     if key not in dstFiles or dstFiles[key] != srcFiles[key]:
@@ -751,9 +775,9 @@ class JobTask:
                 if self.job['method'] == 3:
                     logger = logging.getLogger()
                     if strmSpec:
-                        logger.info(f'存在下载规则{strmSpec}正在为{key}匹配......')
+                        logger.info(f'存在下载规则[{strmSpec}]正在为[{srcPath + key}]匹配......')
                         if re.search(strmSpec, key):
-                            logger.info(f'{key}符合下载文件正则直接下载')
+                            logger.info(f'[{srcPath + key}]符合下载文件正则直接下载')
                             # 目标目录没有这个文件或文件大小不匹配(即需要同步)
                             self.copyFile(srcPath, dstPath, key, srcFiles[key])
 
@@ -762,7 +786,7 @@ class JobTask:
                     if wantSpec:
                         if re.search(wantSpec, key):
                             strmName = self.smart_extension_replace(key, '.strm')
-                            logger.info(f'strm文件名{strmName}')
+                            logger.info(f'strm文件名[{srcPath + strmName}]')
                             strm_url_prefix = self.alistClient.url
                             if self.job['strm_url_prefix']:
                                 strm_url_prefix = self.job['strm_url_prefix']
