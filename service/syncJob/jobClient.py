@@ -665,7 +665,7 @@ class JobTask:
                 if not key.endswith('/') and re.search(strmSpec, key):
                     logger.info(f'[{dstPath + key}]符合刮削文件同步正则')
                     # 目标目录没有这个文件或文件大小不匹配(即需要同步)
-                    if key not in srcFiles:
+                    if key not in srcFiles or dstFiles[key] != srcFiles[key]:
                         logger.info(f'[{dstPath + key}]源目录没有这个文件(即需要同步)')
                         self.copyFile(dstPath, srcPath, key, dstFiles[key])
 
