@@ -31,7 +31,7 @@ class CopyItem:
         self.dstPath = dstPath
         self.fileName = fileName
         self.fileSize = fileSize
-        self.copyType = 0 if method < 2 else 2
+        self.copyType = 0 if method != 2 else 2
         self.alistTaskId = None
         self.status = 0
         self.progress = 0.0

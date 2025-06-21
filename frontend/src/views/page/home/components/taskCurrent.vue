@@ -122,6 +122,15 @@
 				}
 			}
 		},
+    watch:{
+      cuTaskList: {
+        handler(newVal, oldVal) {
+          console.log('cuTaskList changed:', newVal, oldVal);
+          this.cuTaskInfo = this.toTable
+        },
+        deep: true // 深度监听
+      },
+    },
 		data() {
 			return {
 				loading: false,
@@ -247,7 +256,6 @@
 				}).then(res => {
           this.cuTaskInfo.dataList = res.data.data;
           this.cuTaskInfo.count = res.data.total_items;
-					this.cuTaskList = this.cuTaskInfo.dataList;
 					this.loadingTask = false;
 				}).catch(err => {
 					setTimeout(() => {
@@ -289,7 +297,11 @@
 				if (status == 1) {
 					this.cuTaskList = this.current.doingTask;
 				} else {
-					this.cuTaskList = [];
+          this.cuTaskList = []
+					this.cuTaskInfo = {
+            dataList: [],
+            count: 0
+          };
 				}
 			},
 			pageChange(val) {
@@ -377,7 +389,7 @@
             justify-content: center;
 
             div {
-              width: 268px;
+              width: 280px;
             }
           }
         }
