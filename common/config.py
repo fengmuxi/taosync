@@ -29,8 +29,8 @@ def getConfig():
             'console_level': 2,
             'log_save': 7,
             'task_save': 0,
-            'log_max_bytes': 10 * 1024 * 1024,
-            'log_backup_count': 20,
+            'log_max_bytes': 9 * 1024 * 1024,
+            'log_backup_count': 0,
             'timeout': 72
         }
         if os.path.exists('data/config.ini'):
@@ -53,8 +53,8 @@ def getConfig():
                 sCfg['console_level'] = int(os.getenv('TAO_CONSOLE_LEVEL', 2))
                 sCfg['log_save'] = int(os.getenv('TAO_LOG_SAVE', 7))
                 sCfg['task_save'] = int(os.getenv('TAO_TASK_SAVE', 0))
-                sCfg['log_max_bytes'] = int(os.getenv('LOG_MAX_BYTES', 10 * 1024 * 1024))
-                sCfg['log_backup_count'] = int(os.getenv('LOG_BACKUP_COUNT', 20))
+                sCfg['log_max_bytes'] = int(os.getenv('LOG_MAX_BYTES', 9 * 1024 * 1024))
+                sCfg['log_backup_count'] = int(os.getenv('LOG_BACKUP_COUNT', 0))
                 sCfg['timeout'] = int(os.getenv('TAO_TASK_TIMEOUT', 72))
             except Exception as e:
                 logger = logging.getLogger()

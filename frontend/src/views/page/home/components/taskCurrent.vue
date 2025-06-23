@@ -54,6 +54,7 @@
           </div>
 				</div>
         <div class="current-box-top-right">
+          <menuRefresh :autoRefresh="true" :loading="loading" @getData="getCurrent()" :needShow="2"></menuRefresh>
           <el-button type="danger" @click="abortJob">中止任务</el-button>
 				</div>
 			</div>
@@ -151,7 +152,8 @@
 			};
 		},
 		created() {
-			this.startRefresh();
+      this.getCurrent()
+			// this.startRefresh();
 			// this.test();
 		},
 		beforeDestroy() {
@@ -395,6 +397,8 @@
         }
         .current-box-top-right {
           margin-left: 16px;
+          display: flex;
+          gap: 20px;
         }
 			}
 

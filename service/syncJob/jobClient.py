@@ -288,6 +288,8 @@ class JobTask:
                 currentTasks[status] = tasks
         currentTasks[-1] = otk
         for key in currentTasks.keys():
+            if key == 0:
+                continue
             currentTasks[key] = list(reversed(currentTasks[key]))
         self.currentTasks = currentTasks
         result = {
@@ -346,6 +348,13 @@ class JobTask:
         self.updateTaskStatus()
         self.jobClient.jobDoing = False
         self.jobClient.currentJobTask = None
+
+    def retryJob(self):
+        """
+        重试失败作业
+        """
+        return
+
 
     def copyHook(self, srcPath, dstPath, name, size, alistTaskId=None, status=0, errMsg=None, isPath=0,
                  copyType=0, createTime=int(time.time())):
@@ -988,6 +997,14 @@ class JobClient:
         """
         if self.currentJobTask:
             self.currentJobTask.breakFlag = True
+
+    def retryJob(self):
+        """
+        重试作业
+        :return:
+        """
+        if self.currentJobTask:
+            self.currentJobTask.retryJob()
 
     def stopJob(self, remove=False):
         """

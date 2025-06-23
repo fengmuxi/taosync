@@ -75,6 +75,9 @@ class Job(BaseHandler):
                 jobService.abortJob(req['id'])
             else:
                 jobService.pauseJob(req['id'])
+        elif req['retry'] is True:
+            # 重试失败的作业
+            jobService.retryJob(req['id'])
         else:
             # 启用作业
             jobService.continueJob(req['id'])

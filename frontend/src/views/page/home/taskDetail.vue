@@ -17,7 +17,7 @@
 				</el-select>
 			</div>
 			<div class="top-box-title">任务详情</div>
-			<menuRefresh :freshInterval="9973" :autoRefresh="false" :loading="loading" :needShow="1"
+			<menuRefresh :autoRefresh="false" :freshInterval="10000" :loading="loading" :needShow="1"
 				@getData="getTaskItemList"></menuRefresh>
 			<!-- <el-button :loading="loading" type="primary" icon="el-icon-refresh" circle @click="getTaskItemList"></el-button> -->
 		</div>

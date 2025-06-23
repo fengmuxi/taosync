@@ -180,6 +180,15 @@ def abortJob(jobId):
     client = getJobClientById(jobId)
     client.abortJob()
 
+def retryJob(jobId):
+    """
+    重试作业
+    :param jobId:
+    :return:
+    """
+    client = getJobClientById(jobId)
+    client.retryJob()
+
 def getJobList(req):
     """
     作业列表
