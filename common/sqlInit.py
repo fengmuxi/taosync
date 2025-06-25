@@ -4,7 +4,7 @@ from common import sqlBase
 
 @sqlBase.connect_sql
 def init_sql(conn):
-    cuVersion = 250619
+    cuVersion = 250625
     cursor = conn.cursor()
     cursor.execute("SELECT name FROM sqlite_master WHERE name='user_list'")
     passwd = None
@@ -52,11 +52,16 @@ def init_sql(conn):
                        "start_date text DEFAULT NULL,"      # 开始时间
                        "end_date text DEFAULT NULL,"        # 结束时间
                        "exclude text DEFAULT NULL,"         # 排除无需同步项，类似gitignore语法，英文冒号分隔多个规则
-                       "possess text DEFAULT NULL,"         # 筛选需要同步项，类似gitignore语法，英文冒号分隔多个规则
-                       "strm_nfo text DEFAULT NULL,"        # 筛选strm刮削文件同步项，类似gitignore语法，英文冒号分隔多个规则
+                       "ignore_path text DEFAULT NULL,"     # 排除无需同步项路径前缀，英文冒号分隔多个规则
+                       "possess text DEFAULT NULL,"         # 文件匹配正则
+                       "strm_nfo text DEFAULT NULL,"        # 筛选strm刮削文件同步项，文件匹配正则
                        "strm_path text DEFAULT NULL,"       # strm文件保存路径
                        "strm_url_prefix text DEFAULT NULL," # strm文件保存内容前缀
+                       "strm_create_cover integer DEFAULT 0," # strm文件生成是否覆盖更新本地原有文件
+                       "strm_create_cover_possess text DEFAULT NULL," # strm文件生成是否覆盖更新本地原有文件路径匹配项，留空则全匹配
                        "strm_src_sync integer DEFAULT 0,"   # 生成strm文件时同步目录，是否允许刮削文件同步至源目录，0-不使用，1-使用
+                       "strm_src_sync_cover integer DEFAULT 0,"   # 生成strm文件时同步目录，是否允许刮削文件同步至源目录并覆盖，0-不使用，1-使用
+                       "strm_src_sync_cover_possess text DEFAULT NULL," # 生成strm文件时同步目录，允许刮削文件同步至源目录并覆盖路径匹配项，留空则全匹配
                        "strm_dst_sync integer DEFAULT 0,"   # 生成strm文件时同步目录，是否允许删除目标目录多余strm文件，0-不使用，1-使用
                        "createTime integer DEFAULT (strftime('%s', 'now')),"
                        " unique (srcPath, dstPath, alistId))")
@@ -151,6 +156,12 @@ def init_sql(conn):
             if sqlVersion < 250619:
                 cursor.execute("alter table job add column strm_src_sync integer DEFAULT 0")
                 cursor.execute("alter table job add column strm_dst_sync integer DEFAULT 0")
+            if sqlVersion < 250625:
+                cursor.execute("alter table job add column ignore_path text DEFAULT NULL")
+                cursor.execute("alter table job add column strm_create_cover integer DEFAULT 0")
+                cursor.execute("alter table job add column strm_create_cover_possess text DEFAULT NULL")
+                cursor.execute("alter table job add column strm_src_sync_cover integer DEFAULT 0")
+                cursor.execute("alter table job add column strm_src_sync_cover_possess text DEFAULT NULL")
             cursor.execute(f"update user_list set sqlVersion={cuVersion}")
             conn.commit()
     cursor.close()

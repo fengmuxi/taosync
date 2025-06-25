@@ -48,12 +48,14 @@ def addJob(job):
                                   "scanIntervalT, useCacheS, scanIntervalS, method, interval"
                                   ",isCron, year, month, day, week, day_of_week, hour, minute, second, "
                                   "start_date, end_date, exclude, possess, strm_nfo, strm_path, strm_url_prefix,"
-                                  "strm_src_sync, strm_dst_sync) "
+                                  "strm_src_sync, strm_dst_sync, ignore_path, strm_create_cover, strm_create_cover_possess,"
+                                  "strm_src_sync_cover, strm_src_sync_cover_possess) "
                                   "VALUES (:enable, :remark, :srcPath, :dstPath, :alistId, :useCacheT, "
                                   ":scanIntervalT, :useCacheS, :scanIntervalS, :method, :interval, "
                                   ":isCron, :year, :month, :day, :week, :day_of_week, :hour, :minute, :second, "
                                   ":start_date, :end_date, :exclude, :possess, :strm_nfo, :strm_path, :strm_url_prefix,"
-                                  ":strm_src_sync, :strm_dst_sync)", job)
+                                  ":strm_src_sync, :strm_dst_sync, :ignore_path, :strm_create_cover, :strm_create_cover_possess,"
+                                  ":strm_src_sync_cover, :strm_src_sync_cover_possess)", job)
 
 
 def updateJob(job):
@@ -64,7 +66,9 @@ def updateJob(job):
                            "month=:month, day=:day, week=:week, day_of_week=:day_of_week, hour=:hour, minute=:minute, "
                            "second=:second, start_date=:start_date, end_date=:end_date, exclude=:exclude, possess=:possess, "
                            "strm_nfo=:strm_nfo, strm_path=:strm_path, strm_url_prefix=:strm_url_prefix, strm_src_sync=:strm_src_sync,"
-                           "strm_dst_sync=:strm_dst_sync  where id=:id",
+                           "strm_dst_sync=:strm_dst_sync, ignore_path=:ignore_path, strm_create_cover=:strm_create_cover,"
+                           "strm_create_cover_possess=:strm_create_cover_possess, strm_src_sync_cover=:strm_src_sync_cover,"
+                           "strm_src_sync_cover_possess=:strm_src_sync_cover_possess  where id=:id",
                            job)
 
 

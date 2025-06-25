@@ -35,7 +35,7 @@ def setLogger(cusLevel=None):
         logger.removeHandler(logger.handlers[1])
     # 处理文件日志处理器 - 使用 RotatingFileHandler 替代 FileHandler
     max_bytes = cfg['server'].get('log_max_bytes', 9 * 1024 * 1024)  # 默认为9MB
-    backup_count = cfg['server'].get('log_backup_count', 0)  # 默保不限制备份文件
+    backup_count = cfg['server'].get('log_backup_count', 10000)  # 默保不限制备份文件
 
     # 查找并移除现有的文件日志处理器
     for handler in logger.handlers[:]:

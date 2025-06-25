@@ -351,7 +351,8 @@
           jobPut({
             pause: true,
             id: Number(this.jobId),
-            abort: true
+            abort: true,
+            retry: null
           }).then(res => {
             this.$message({
               message: '中止指令已发送，请等待中止完成',

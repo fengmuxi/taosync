@@ -79,6 +79,19 @@
 						</div>
             <div class="form-box-item">
               <div class="form-box-item-label">
+                路径排除项规则
+              </div>
+              <div class="form-box-item-value">
+                <span v-if="props.row.ignore_path == null">-</span>
+                <template v-else>
+									<span class="exclude-item bg-3" v-for="item in props.row.ignore_path.split(':')">
+										{{item}}
+									</span>
+                </template>
+              </div>
+            </div>
+            <div class="form-box-item">
+              <div class="form-box-item-label">
                 文件匹配正则
               </div>
               <div class="form-box-item-value">
@@ -123,6 +136,48 @@
               </div>
               <div class="form-box-item-value">
                 {{props.row.strm_dst_sync == 0?'否':'是'}}
+              </div>
+            </div>
+            <div class="form-box-item" v-if="props.row.method == 3">
+              <div class="form-box-item-label">
+                覆盖本地strm文件
+              </div>
+              <div class="form-box-item-value">
+                {{props.row.strm_create_cover == 0?'否':'是'}}
+              </div>
+            </div>
+            <div class="form-box-item">
+              <div class="form-box-item-label">
+                覆盖规则(源目录路径前缀)
+              </div>
+              <div class="form-box-item-value">
+                <span v-if="props.row.strm_create_cover_possess == null">-</span>
+                <template v-else>
+									<span class="exclude-item bg-3" v-for="item in props.row.strm_create_cover_possess.split(':')">
+										{{item}}
+									</span>
+                </template>
+              </div>
+            </div>
+            <div class="form-box-item" v-if="props.row.method == 3">
+              <div class="form-box-item-label">
+                覆盖源目录刮削文件
+              </div>
+              <div class="form-box-item-value">
+                {{props.row.strm_src_sync_cover == 0?'否':'是'}}
+              </div>
+            </div>
+            <div class="form-box-item">
+              <div class="form-box-item-label">
+                覆盖刮削文件规则(源目录路径前缀)
+              </div>
+              <div class="form-box-item-value">
+                <span v-if="props.row.strm_src_sync_cover_possess == null">-</span>
+                <template v-else>
+									<span class="exclude-item bg-3" v-for="item in props.row.strm_src_sync_cover_possess.split(':')">
+										{{item}}
+									</span>
+                </template>
               </div>
             </div>
 						<div class="form-box-item">
@@ -335,6 +390,24 @@
 								</div>
 							</div>
 						</el-form-item>
+            <el-form-item prop="ignore_path" label="路径排除项语法">
+              <div class="label_width">匹配规则目录开头路径下的所有文件及子文件夹,路径不带/开头为目录子路径</div>
+            </el-form-item>
+            <el-form-item prop="ignore_path" label="路径排除项规则">
+              <div class="label_width">
+                <div class="label-list-box">
+                  <el-input v-model="ignorePathTmp" placeholder="输入后点添加才生效">
+                    <el-button slot="append" @click="addIgnorePath">添加</el-button>
+                  </el-input>
+                  <div v-for="(item, index) in editData.ignore_path" class="label-list-item">
+                    <div class="bg-3 label-list-item-left">
+                      {{item}}
+                    </div>
+                    <el-button type="danger" size="mini" @click="delIgnorePath(index)">删除</el-button>
+                  </div>
+                </div>
+              </div>
+            </el-form-item>
             <el-form-item prop="strm_path" label="str生成目录" v-if="editData.method == 3">
               <el-input v-model.number="editData.strm_path" placeholder="str生成目录"
                         class="label_width">
@@ -353,6 +426,46 @@
             <el-form-item prop="strm_dst_sync" label="同步文件删除本地strm" v-if="editData.method == 3">
               <div class="label_width">
                 <el-switch v-model="editData.strm_dst_sync" :active-value="1" :inactive-value="0"></el-switch>
+              </div>
+            </el-form-item>
+            <el-form-item prop="strm_create_cover" label="覆盖本地strm文件" v-if="editData.method == 3">
+              <div class="label_width">
+                <el-switch v-model="editData.strm_create_cover" :active-value="1" :inactive-value="0"></el-switch>
+              </div>
+            </el-form-item>
+            <el-form-item prop="strm_create_cover_possess" label="覆盖规则(源目录路径前缀)" v-if="editData.method == 3">
+              <div class="label_width">
+                <div class="label-list-box">
+                  <el-input v-model="strmCreateCoverPossessTmp" placeholder="输入后点添加才生效">
+                    <el-button slot="append" @click="addStrmCreateCoverPossess">添加</el-button>
+                  </el-input>
+                  <div v-for="(item, index) in editData.strm_create_cover_possess" class="label-list-item">
+                    <div class="bg-3 label-list-item-left">
+                      {{item}}
+                    </div>
+                    <el-button type="danger" size="mini" @click="delStrmCreateCoverPossess(index)">删除</el-button>
+                  </div>
+                </div>
+              </div>
+            </el-form-item>
+            <el-form-item prop="strm_src_sync_cover" label="覆盖源目录刮削文件" v-if="editData.method == 3">
+              <div class="label_width">
+                <el-switch v-model="editData.strm_src_sync_cover" :active-value="1" :inactive-value="0"></el-switch>
+              </div>
+            </el-form-item>
+            <el-form-item prop="strm_src_sync_cover_possess" label="覆盖刮削文件规则(源目录路径前缀)" v-if="editData.method == 3">
+              <div class="label_width">
+                <div class="label-list-box">
+                  <el-input v-model="strmSrcSyncCoverPossessTmp" placeholder="输入后点添加才生效">
+                    <el-button slot="append" @click="addStrmSrcSyncCoverPossess">添加</el-button>
+                  </el-input>
+                  <div v-for="(item, index) in editData.strm_src_sync_cover_possess" class="label-list-item">
+                    <div class="bg-3 label-list-item-left">
+                      {{item}}
+                    </div>
+                    <el-button type="danger" size="mini" @click="delStrmSrcSyncCoverPossess(index)">删除</el-button>
+                  </div>
+                </div>
               </div>
             </el-form-item>
 						<span v-if="editData.method == 2"
@@ -481,12 +594,16 @@
 				editLoading: false,
 				editData: null,
 				excludeTmp: '',
+        ignorePathTmp: '',
+        strmCreateCoverPossessTmp: '',
+        strmSrcSyncCoverPossessTmp: '',
 				editShow: false,
 				disableShow: false,
 				disableIsDel: false,
 				disableCu: {
 					id: null,
-					pause: true
+					pause: true,
+          retry: null
 				},
 				addRule: {
 					srcPath: [{
@@ -534,7 +651,8 @@
 				}).then(() => {
 					this.btnLoading = true;
 					jobPut({
-						pause: null
+						pause: null,
+            retry: null
 					}).then(res => {
 						this.btnLoading = false;
 						this.$message({
@@ -578,7 +696,8 @@
 				this.btnLoading = true;
 				jobPut({
 					id: row.id,
-					pause: pause
+					pause: pause,
+          retry: null
 				}).then(res => {
 					this.btnLoading = false;
 					this.$message({
@@ -608,6 +727,9 @@
 					this.getAlistList();
 				}
 				this.excludeTmp = '';
+				this.ignorePathTmp = '';
+				this.strmCreateCoverPossessTmp = '';
+				this.strmSrcSyncCoverPossessTmp = '';
 				this.editData = JSON.parse(JSON.stringify(row));
 				this.editData.dstPath = this.editData.dstPath.split(':');
 				if (this.editData.exclude) {
@@ -615,6 +737,21 @@
 				} else {
 					this.editData.exclude = [];
 				}
+        if (this.editData.ignore_path) {
+          this.editData.ignore_path = this.editData.ignore_path.split(':');
+        } else {
+          this.editData.ignore_path = [];
+        }
+        if (this.editData.strm_create_cover_possess) {
+          this.editData.strm_create_cover_possess = this.editData.strm_create_cover_possess.split(':');
+        } else {
+          this.editData.strm_create_cover_possess = [];
+        }
+        if (this.editData.strm_src_sync_cover_possess) {
+          this.editData.strm_src_sync_cover_possess = this.editData.strm_src_sync_cover_possess.split(':');
+        } else {
+          this.editData.strm_src_sync_cover_possess = [];
+        }
 				this.editShow = true;
 			},
 			addShow() {
@@ -636,17 +773,25 @@
 					isCron: 0,
 					exclude: [],
           possess: '',
+          ignore_path: [],
           strm_nfo: '',
           strm_path: '',
           strm_url_prefix: '',
           strm_src_sync: 0,
-          strm_dst_sync: 0
+          strm_dst_sync: 0,
+          strm_create_cover: 0,
+          strm_create_cover_possess: [],
+          strm_src_sync_cover: 0,
+          strm_src_sync_cover_possess: []
 				}
 				this.cronList.forEach(item => {
 					editData[item.label] = null;
 				})
 				this.editData = editData;
 				this.excludeTmp = '';
+				this.ignorePathTmp = '';
+				this.strmCreateCoverPossessTmp = '';
+				this.strmSrcSyncCoverPossessTmp = '';
 				this.editShow = true;
 			},
 			closeShow() {
@@ -668,6 +813,33 @@
 			delExclude(index) {
 				this.editData.exclude.splice(index, 1);
 			},
+      addStrmSrcSyncCoverPossess() {
+        if (this.strmSrcSyncCoverPossessTmp != '') {
+          this.editData.strm_src_sync_cover_possess.push(this.strmSrcSyncCoverPossessTmp);
+        }
+        this.strmSrcSyncCoverPossessTmp = '';
+      },
+      delStrmSrcSyncCoverPossess(index) {
+        this.editData.strm_src_sync_cover_possess.splice(index, 1);
+      },
+      addIgnorePath() {
+        if (this.ignorePathTmp != '') {
+          this.editData.ignore_path.push(this.ignorePathTmp);
+        }
+        this.ignorePathTmp = '';
+      },
+      delIgnorePath(index) {
+        this.editData.ignore_path.splice(index, 1);
+      },
+      addStrmCreateCoverPossess() {
+        if (this.strmCreateCoverPossessTmp != '') {
+          this.editData.strm_create_cover_possess.push(this.strmCreateCoverPossessTmp);
+        }
+        this.strmCreateCoverPossessTmp = '';
+      },
+      delStrmCreateCoverPossess(index) {
+        this.editData.strm_create_cover_possess.splice(index, 1);
+      },
 			delDstPath(index) {
 				this.editData.dstPath.splice(index, 1);
 			},
@@ -702,6 +874,9 @@
             }
 						postData.dstPath = postData.dstPath.join(':');
 						postData.exclude = postData.exclude.join(':');
+						postData.ignore_path = postData.ignore_path.join(':');
+						postData.strm_create_cover_possess = postData.strm_create_cover_possess.join(':');
+						postData.strm_src_sync_cover_possess = postData.strm_src_sync_cover_possess.join(':');
 						this.editLoading = true;
 						jobPost(postData).then(res => {
 							this.editLoading = false;

@@ -2,6 +2,7 @@
 @Author：dr34m
 @Date  ：2024/7/4 13:57 
 """
+import os
 import time
 import re
 
@@ -10,7 +11,7 @@ import requests
 from common.LNG import G
 
 
-def checkExs(path, rts, spec, wantSpec, strmSpec):
+def checkExs(path, rts, spec, wantSpec, strmSpec, ignore_path):
     """
     检查并排除排除项
     :param path: 所在路径
@@ -27,6 +28,7 @@ def checkExs(path, rts, spec, wantSpec, strmSpec):
     rtsNew = rts.copy()
     for rtsItem in rts.keys():
         spec_del = True
+        ignore_path_del = True
         want_spec_del = True
         strm_spec_del = True
         strm_del = True
@@ -37,6 +39,12 @@ def checkExs(path, rts, spec, wantSpec, strmSpec):
                 spec_del = False
         else:
             spec_del = False
+
+        if ignore_path:
+            ignore_path_del = is_path_prefix(rtsItem, ignore_path)
+        else:
+            ignore_path_del = False
+
         if not rtsItem.endswith("/"):
             # 匹配需要生成strm文件存在保留
             if wantSpec:
@@ -52,9 +60,24 @@ def checkExs(path, rts, spec, wantSpec, strmSpec):
         else:
             file_del = False
         # 判断删除内容
-        if spec_del or (want_spec_del and strm_spec_del and strm_del and file_del):
+        if spec_del or ignore_path_del or (want_spec_del and strm_spec_del and strm_del and file_del):
             del rtsNew[rtsItem]
     return rtsNew
+
+
+def is_path_prefix(file_path, prefix_list):
+    """更安全的路径前缀检查，处理结尾分隔符"""
+    for prefix in prefix_list:
+        # 统一添加路径分隔符防止误匹配
+        safe_prefix = prefix.rstrip(os.sep) + os.sep
+        if file_path.startswith(safe_prefix):
+            return True
+
+        # 额外检查精确匹配的情况
+        if file_path == prefix or file_path == prefix.rstrip(os.sep):
+            return True
+
+    return False
 
 
 class AlistClient:
@@ -162,7 +185,7 @@ class AlistClient:
                     return
             self.waits[pathFirst] = time.time()
 
-    def fileListApi(self, path, useCache=0, scanInterval=0, spec=None, wantSpec=None, strmSpec=None, rootPath=None):
+    def fileListApi(self, path, useCache=0, scanInterval=0, spec=None, wantSpec=None, strmSpec=None, rootPath=None, ignore_path=None):
         """
         目录列表
         :param path: 目录，以/开头并以/结尾
@@ -185,14 +208,14 @@ class AlistClient:
         if res is not None:
             rts = {
                 f"{item['name']}/" if item['is_dir'] else item['name']: {} if item['is_dir']
-                else item['size'] for item in res
+                else {'size': item['size'], 'sign': item['sign']} for item in res
             }
         else:
             rts = {}
         if (spec or wantSpec) and rts:
             if rootPath is None:
                 rootPath = path
-            rts = checkExs(path[len(rootPath):], rts, spec, wantSpec, strmSpec)
+            rts = checkExs(path[len(rootPath):], rts, spec, wantSpec, strmSpec, ignore_path)
         return rts
 
     def filePathList(self, path):

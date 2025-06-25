@@ -20,6 +20,7 @@ from common.LNG import G
 from mapper import jobMapper
 from service.alist import alistService
 from service.syncJob import taskService
+import hashlib
 
 
 class CopyItem:
@@ -423,13 +424,27 @@ class JobTask:
         spec = None
         if jobExclude is not None:
             spec = PathSpec.from_lines(GitWildMatchPattern, jobExclude.split(':'))
+
+        ignore_path = None
+        if self.job['ignore_path'] is not None:
+            ignore_path = self.job['ignore_path'].split(':')
+
+        strm_create_cover_possess = None
+        if self.job['strm_create_cover_possess'] is not None:
+            strm_create_cover_possess = self.job['strm_create_cover_possess'].split(':')
+
+        strm_src_sync_cover_possess = None
+        if self.job['strm_src_sync_cover_possess'] is not None:
+            strm_src_sync_cover_possess = self.job['strm_src_sync_cover_possess'].split(':')
+
         if not srcPath.endswith('/'):
             srcPath = srcPath + '/'
         dstPathList = self.job['dstPath'].split(':')
         i = 0
         for dstItem in dstPathList:
             i += 1
-            self.syncWithHave(srcPath, dstItem, spec, wantSpec, strmSpec, strmPath, srcPath, dstItem, i == 1)
+            self.syncWithHave(srcPath, dstItem, spec, wantSpec, strmSpec, strmPath, srcPath, dstItem, i == 1,
+                              ignore_path, strm_create_cover_possess, strm_src_sync_cover_possess)
         self.scanFinish = True
 
     def copyFile(self, srcPath, dstPath, fileName, fileSize):
@@ -473,7 +488,7 @@ class JobTask:
             errMsg = str(e)
         self.delHook(path, fileName, None if isPath else size, status, errMsg, isPath, createTime)
 
-    def listDir(self, path, firstDst, spec, wantSpec, strmSpec, rootPath, isSrc=True):
+    def listDir(self, path, firstDst, spec, wantSpec, strmSpec, rootPath, ignore_path, isSrc=True):
         """
         列出目录
         self.job['useCacheT']: 扫描目标目录时，是否使用缓存，0-不使用，1-使用
@@ -492,7 +507,7 @@ class JobTask:
         useCache = 1 if isSrc and not firstDst else self.job[f"useCache{'S' if isSrc else 'T'}"]
         scanInterval = self.job[f"scanInterval{'S' if isSrc else 'T'}"]
         try:
-            return self.alistClient.fileListApi(path, useCache, scanInterval, spec, wantSpec, strmSpec, rootPath)
+            return self.alistClient.fileListApi(path, useCache, scanInterval, spec, wantSpec, strmSpec, rootPath, ignore_path)
         except Exception as e:
             logger = logging.getLogger()
             errMsg = G('scan_error').format(G('src' if isSrc else 'dst'), str(e))
@@ -644,7 +659,64 @@ class JobTask:
         createStrmItem = CreateStrmItem(strmPath, srcPath, srcRootPath, strmName, raw_url, self)
         self.waiting.append(createStrmItem)
 
-    def syncWithHave(self, srcPath, dstPath, spec, wantSpec, strmSpec, strmPath, srcRootPath, dstRootPath, firstDst):
+    def is_path_prefix(self, file_path, prefix_list):
+        """更安全的路径前缀检查，处理结尾分隔符"""
+        for prefix in prefix_list:
+            # 统一添加路径分隔符防止误匹配
+            safe_prefix = prefix.rstrip(os.sep) + os.sep
+            if file_path.startswith(safe_prefix):
+                return True
+
+            # 额外检查精确匹配的情况
+            if file_path == prefix or file_path == prefix.rstrip(os.sep):
+                return True
+
+        return False
+
+    def update_file_if_changed(self, new_content, file_path):
+        """
+        比较内容并仅在更改时写入文件
+
+        参数:
+            new_content (str): 要写入的新内容
+            file_path (str): 目标文件路径
+
+        返回:
+            bool: 是否进行了更新
+        """
+        try:
+            # 如果文件不存在，直接创建
+            if not os.path.exists(file_path):
+                logging.info(f"文件不存在，创建: {file_path}")
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write(new_content)
+                return True
+
+            # 读取现有文件内容
+            with open(file_path, 'r', encoding='utf-8') as f:
+                existing_content = f.read()
+
+            # 比较内容哈希值
+            existing_hash = hashlib.md5(existing_content.encode('utf-8')).hexdigest()
+            new_hash = hashlib.md5(new_content.encode('utf-8')).hexdigest()
+
+            # 内容相同时跳过
+            if existing_hash == new_hash:
+                logging.debug(f"内容未变化，跳过: {file_path}")
+                return False
+
+            # 内容不同则更新
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(new_content)
+            logging.info(f"内容已更新: {file_path}")
+            return True
+
+        except Exception as e:
+            logging.error(f"处理文件出错 {file_path}: {str(e)}")
+            raise
+
+    def syncWithHave(self, srcPath, dstPath, spec, wantSpec, strmSpec, strmPath, srcRootPath, dstRootPath, firstDst,
+                              ignore_path, strm_create_cover_possess, strm_src_sync_cover_possess):
         """
         扫描并同步-目标目录存在目录（意味着要继续扫描目标目录）
         :param srcPath: 来源路径，以/结尾
@@ -661,8 +733,8 @@ class JobTask:
         if self.breakFlag:
             return
         try:
-            srcFiles = self.listDir(srcPath, firstDst, spec, wantSpec, strmSpec, srcRootPath)
-            dstFiles = self.listDir(dstPath, firstDst, spec, wantSpec, strmSpec, dstRootPath, False)
+            srcFiles = self.listDir(srcPath, firstDst, spec, wantSpec, strmSpec, srcRootPath, ignore_path)
+            dstFiles = self.listDir(dstPath, firstDst, spec, wantSpec, strmSpec, dstRootPath, ignore_path, False)
         except Exception:
             # 已在listDir做出日志打印等操作，此处啥都不用做
             return
@@ -674,9 +746,11 @@ class JobTask:
                 if not key.endswith('/') and re.search(strmSpec, key):
                     logger.info(f'[{dstPath + key}]符合刮削文件同步正则')
                     # 目标目录没有这个文件或文件大小不匹配(即需要同步)
-                    if key not in srcFiles or dstFiles[key] != srcFiles[key]:
-                        logger.info(f'[{dstPath + key}]源目录没有这个文件(即需要同步)')
-                        self.copyFile(dstPath, srcPath, key, dstFiles[key])
+                    if key not in srcFiles or dstFiles[key] != srcFiles[key]['size'] \
+                            or (self.job['strm_src_sync_cover'] == 1
+                                and self.is_path_prefix(srcPath, strm_src_sync_cover_possess)):
+                        logger.info(f'[{dstPath + key}]源目录没有这个文件或该目录需要强制同步(即需要同步)')
+                        self.copyFile(dstPath, srcPath, key, dstFiles[key]['size'])
 
         # 判断删除目标目录在源目录不存在的文件
         if self.job['method'] == 3 and self.job['strm_dst_sync'] == 1:
@@ -685,11 +759,11 @@ class JobTask:
                     logger.info(f'[{dstPath + dstKey}]源目录没有这个文件或文件夹需要删除')
                     if dstKey.endswith('/'):
                         logger.info(f'[{dstPath + dstKey}]源目录没有这个文件夹删除')
-                        self.delFile(dstPath, dstKey, dstFiles[dstKey])
+                        self.delFile(dstPath, dstKey, dstFiles[dstKey]['size'])
                     else:
                         if re.search("\.(strm)$", dstKey):
                             logger.info(f'[{dstPath + dstKey}]源目录没有这个strm文件删除')
-                            self.delFile(dstPath, dstKey, dstFiles[dstKey])
+                            self.delFile(dstPath, dstKey, dstFiles[dstKey]['size'])
 
         for key in srcFiles.keys():
             # 如果是文件
@@ -700,9 +774,9 @@ class JobTask:
                         if re.search(strmSpec, key):
                             logger.info(f'[{srcPath + key}]符合下载文件正则')
                             # 目标目录没有这个文件或文件大小不匹配(即需要同步)
-                            if key not in dstFiles or dstFiles[key] != srcFiles[key]:
+                            if key not in dstFiles or dstFiles[key]['size'] != srcFiles[key]['size']:
                                 logger.info(f'[{srcPath + key}]目标目录没有这个文件或文件大小不匹配(即需要同步)')
-                                self.copyFile(srcPath, dstPath, key, srcFiles[key])
+                                self.copyFile(srcPath, dstPath, key, srcFiles[key]['size'])
                         else:
                             logger.info(f'[{srcPath + key}]不符合下载文件正则')
 
@@ -710,39 +784,45 @@ class JobTask:
                         if re.search(wantSpec, key):
                             strmName = self.smart_extension_replace(key, '.strm')
                             logger.info(f'strm文件名[{srcPath + strmName}]')
-                            if strmName not in dstFiles:
+                            strm_url_prefix = self.alistClient.url
+                            if self.job['strm_url_prefix']:
+                                strm_url_prefix = self.job['strm_url_prefix']
+                            raw_url = strm_url_prefix + '/d' + srcPath + key
+                            if srcFiles[key]['sign']:
+                                raw_url = raw_url + '?sign=' + srcFiles[key]['sign']
+
+                            if (self.job['strm_create_cover'] == 1 and self.is_path_prefix(srcPath, strm_create_cover_possess)) or strmName not in dstFiles:
                                 logger.info(f'不存在[{srcPath + strmName}]开始创建......')
                                 # fileInfo = self.getFileInfo(srcPath + key, firstDst, spec, wantSpec, srcRootPath)
                                 # raw_url = fileInfo['raw_url']
-                                strm_url_prefix = self.alistClient.url
-                                if self.job['strm_url_prefix']:
-                                    strm_url_prefix = self.job['strm_url_prefix']
-                                raw_url = strm_url_prefix + '/d' + srcPath + key
                                 self.createFile(strmPath, srcPath, srcRootPath, strmName, raw_url)
                             else:
+                                # if self.job['strm_create_cover'] == 1 and self.is_path_prefix(srcPath, strm_create_cover_possess):
+                                #     self.update_file_if_changed(raw_url, strmPath + strmName)
                                 logger.info(f'存在strm文件[{srcPath + strmName}]跳过生成......')
                 else:
                     # 目标目录没有这个文件或文件大小不匹配(即需要同步)
-                    if key not in dstFiles or dstFiles[key] != srcFiles[key]:
-                        self.copyFile(srcPath, dstPath, key, srcFiles[key])
+                    if key not in dstFiles or dstFiles[key]['size'] != srcFiles[key]['size']:
+                        self.copyFile(srcPath, dstPath, key, srcFiles[key]['size'])
             # 如果是目录
             else:
                 # 目标目录没有这个目录
                 if key not in dstFiles:
                     self.syncWithOutHave(srcPath + key, dstPath + key, spec, wantSpec, strmSpec, strmPath, srcRootPath,
-                                         dstRootPath,
-                                         firstDst)
+                                         dstRootPath, firstDst, ignore_path, strm_create_cover_possess,
+                                         strm_src_sync_cover_possess)
                 # 目标目录有这个目录，继续递归
                 else:
                     self.syncWithHave(srcPath + key, dstPath + key, spec, wantSpec, strmSpec, strmPath, srcRootPath,
-                                      dstRootPath,
-                                      firstDst)
+                                      dstRootPath, firstDst, ignore_path, strm_create_cover_possess,
+                                      strm_src_sync_cover_possess)
         if self.job['method'] == 1:
             for dstKey in dstFiles.keys():
                 if dstKey not in srcFiles:
-                    self.delFile(dstPath, dstKey, dstFiles[dstKey])
+                    self.delFile(dstPath, dstKey, dstFiles[dstKey]['size'])
 
-    def syncWithOutHave(self, srcPath, dstPath, spec, wantSpec, strmSpec, strmPath, srcRootPath, dstRootPath, firstDst):
+    def syncWithOutHave(self, srcPath, dstPath, spec, wantSpec, strmSpec, strmPath, srcRootPath, dstRootPath, firstDst,
+                        ignore_path, strm_create_cover_possess, strm_src_sync_cover_possess):
         """
         扫描并同步-目标目录为空
         :param srcPath: 来源路径，以/结尾
@@ -770,7 +850,7 @@ class JobTask:
         if status != 2:
             return
         try:
-            srcFiles = self.listDir(srcPath, firstDst, spec, wantSpec, strmSpec, srcRootPath)
+            srcFiles = self.listDir(srcPath, firstDst, spec, wantSpec, strmSpec, srcRootPath, ignore_path)
         except Exception:
             # 已在listDir做出日志打印等操作，此处啥都不用做
             return
@@ -779,7 +859,8 @@ class JobTask:
                 break
             if key.endswith('/'):
                 self.syncWithOutHave(srcPath + key, dstPath + key, spec, wantSpec, strmSpec, strmPath, srcRootPath,
-                                     dstRootPath, firstDst)
+                                     dstRootPath, firstDst, ignore_path, strm_create_cover_possess,
+                                     strm_src_sync_cover_possess)
             else:
                 if self.job['method'] == 3:
                     logger = logging.getLogger()
@@ -788,7 +869,7 @@ class JobTask:
                         if re.search(strmSpec, key):
                             logger.info(f'[{srcPath + key}]符合下载文件正则直接下载')
                             # 目标目录没有这个文件或文件大小不匹配(即需要同步)
-                            self.copyFile(srcPath, dstPath, key, srcFiles[key])
+                            self.copyFile(srcPath, dstPath, key, srcFiles[key]['size'])
 
                     # fileInfo = self.getFileInfo(srcPath + key, firstDst, spec, wantSpec, srcRootPath)
                     # raw_url = fileInfo['raw_url']
@@ -802,7 +883,7 @@ class JobTask:
                             raw_url = strm_url_prefix + '/d' + srcPath + key
                             self.createFile(strmPath, srcPath, srcRootPath, strmName, raw_url)
                 else:
-                    self.copyFile(srcPath, dstPath, key, srcFiles[key])
+                    self.copyFile(srcPath, dstPath, key, srcFiles[key]['size'])
 
     def updateTaskStatus(self):
         """
