@@ -663,8 +663,8 @@ class JobTask:
         """更安全的路径前缀检查，处理结尾分隔符"""
         for prefix in prefix_list:
             # 统一添加路径分隔符防止误匹配
-            safe_prefix = prefix.rstrip(os.sep) + os.sep
-            if file_path.startswith(safe_prefix):
+            # safe_prefix = prefix.rstrip(os.sep) + os.sep
+            if file_path.startswith(prefix):
                 return True
 
             # 额外检查精确匹配的情况
@@ -746,7 +746,7 @@ class JobTask:
                 if not key.endswith('/') and re.search(strmSpec, key):
                     logger.info(f'[{dstPath + key}]符合刮削文件同步正则')
                     # 目标目录没有这个文件或文件大小不匹配(即需要同步)
-                    if key not in srcFiles or dstFiles[key] != srcFiles[key]['size'] \
+                    if key not in srcFiles or dstFiles[key]['size'] != srcFiles[key]['size'] \
                             or (self.job['strm_src_sync_cover'] == 1
                                 and self.is_path_prefix(srcPath, strm_src_sync_cover_possess)):
                         logger.info(f'[{dstPath + key}]源目录没有这个文件或该目录需要强制同步(即需要同步)')
@@ -881,6 +881,8 @@ class JobTask:
                             if self.job['strm_url_prefix']:
                                 strm_url_prefix = self.job['strm_url_prefix']
                             raw_url = strm_url_prefix + '/d' + srcPath + key
+                            if srcFiles[key]['sign']:
+                                raw_url = raw_url + '?sign=' + srcFiles[key]['sign']
                             self.createFile(strmPath, srcPath, srcRootPath, strmName, raw_url)
                 else:
                     self.copyFile(srcPath, dstPath, key, srcFiles[key]['size'])
