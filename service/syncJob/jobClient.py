@@ -331,6 +331,12 @@ class JobTask:
                     else:
                         if self.firstSync is None:
                             self.firstSync = time.time()
+                        if self.waiting:
+                            item = self.waiting[0]
+                            if int(time.time()) - item['createTime'] > 30 * 60:
+                                self.waiting = []
+                                self.doing = []
+                                break
                         self.queueNum += 1
                         self.doing[self.queueNum] = self.waiting.pop(0)
                         self.doing[self.queueNum].doingKey = self.queueNum
