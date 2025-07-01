@@ -408,7 +408,7 @@
                 </div>
               </div>
             </el-form-item>
-            <el-form-item prop="strm_path" label="str生成目录" v-if="editData.method == 3">
+            <el-form-item prop="strm_path" label="strm生成目录" v-if="editData.method == 3">
               <el-input v-model.number="editData.strm_path" placeholder="str生成目录"
                         class="label_width">
               </el-input>

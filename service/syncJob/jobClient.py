@@ -675,6 +675,8 @@ class JobTask:
     def is_path_prefix(self, file_path, prefix_list):
         """更安全的路径前缀检查，处理结尾分隔符"""
         for prefix in prefix_list:
+            if not prefix.endswith("/"):
+                prefix = prefix + "/"
             # 统一添加路径分隔符防止误匹配
             # safe_prefix = prefix.rstrip(os.sep) + os.sep
             if file_path.startswith(prefix):

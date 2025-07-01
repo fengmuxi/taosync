@@ -41,7 +41,7 @@ def checkExs(path, rts, spec, wantSpec, strmSpec, ignore_path):
             spec_del = False
 
         if ignore_path:
-            ignore_path_del = is_path_prefix(rtsItem, ignore_path)
+            ignore_path_del = is_path_prefix(path + rtsItem, ignore_path)
         else:
             ignore_path_del = False
 
@@ -68,6 +68,8 @@ def checkExs(path, rts, spec, wantSpec, strmSpec, ignore_path):
 def is_path_prefix(file_path, prefix_list):
     """更安全的路径前缀检查，处理结尾分隔符"""
     for prefix in prefix_list:
+        if not prefix.endswith("/"):
+            prefix = prefix + "/"
         # 统一添加路径分隔符防止误匹配
         # safe_prefix = prefix.rstrip(os.sep) + os.sep
         if file_path.startswith(prefix):
