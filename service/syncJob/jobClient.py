@@ -333,14 +333,21 @@ class JobTask:
                             self.firstSync = time.time()
                         if self.waiting:
                             item = self.waiting[0]
-                            if int(time.time()) - item['createTime'] > 30 * 60:
+                            if int(time.time()) - item.createTime > 30 * 60:
                                 self.waiting = []
                                 self.doing = []
                                 break
                         self.queueNum += 1
                         self.doing[self.queueNum] = self.waiting.pop(0)
                         self.doing[self.queueNum].doingKey = self.queueNum
-                        self.doing[self.queueNum].doByThread()
+                        try:
+                            self.doing[self.queueNum].doByThread()
+                        except Exception as e:
+                            logger = logging.getLogger()
+                            errMsg = G('do_job_err').format(G('src'), '执行任务错误：', str(e))
+                            logger.error(errMsg)
+                            logger.exception(e)
+                            del self.doing[self.queueNum]
                         doingNums = len(self.doing.keys())
                         waitingNums = len(self.waiting)
             else:

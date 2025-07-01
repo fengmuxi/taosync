@@ -69,8 +69,8 @@ def is_path_prefix(file_path, prefix_list):
     """更安全的路径前缀检查，处理结尾分隔符"""
     for prefix in prefix_list:
         # 统一添加路径分隔符防止误匹配
-        safe_prefix = prefix.rstrip(os.sep) + os.sep
-        if file_path.startswith(safe_prefix):
+        # safe_prefix = prefix.rstrip(os.sep) + os.sep
+        if file_path.startswith(prefix):
             return True
 
         # 额外检查精确匹配的情况
