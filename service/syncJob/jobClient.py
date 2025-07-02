@@ -337,6 +337,10 @@ class JobTask:
                                 self.waiting = []
                                 self.doing = []
                                 break
+                        if self.doing:
+                            for key in self.doing.keys():
+                                if int(time.time()) - self.doing[key].createTime > 30 * 60:
+                                    del self.doing[key]
                         self.queueNum += 1
                         self.doing[self.queueNum] = self.waiting.pop(0)
                         self.doing[self.queueNum].doingKey = self.queueNum
