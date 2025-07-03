@@ -326,21 +326,21 @@ class JobTask:
                 while doingNums < 20:
                     if self.breakFlag:
                         break
+                    if self.waiting:
+                        item = self.waiting[0]
+                        if int(time.time()) - item.createTime > 30 * 60:
+                            self.waiting = []
+                            self.doing = []
+                            break
+                    if self.doing:
+                        for key in self.doing.keys():
+                            if int(time.time()) - self.doing[key].createTime > 30 * 60:
+                                del self.doing[key]
                     if waitingNums == 0:
                         break
                     else:
                         if self.firstSync is None:
                             self.firstSync = time.time()
-                        if self.waiting:
-                            item = self.waiting[0]
-                            if int(time.time()) - item.createTime > 30 * 60:
-                                self.waiting = []
-                                self.doing = []
-                                break
-                        if self.doing:
-                            for key in self.doing.keys():
-                                if int(time.time()) - self.doing[key].createTime > 30 * 60:
-                                    del self.doing[key]
                         self.queueNum += 1
                         self.doing[self.queueNum] = self.waiting.pop(0)
                         self.doing[self.queueNum].doingKey = self.queueNum

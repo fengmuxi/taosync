@@ -27,7 +27,7 @@ def logClearJob():
             saveLogList.append(f'sys_{dateName}.log')
             dayNow -= 60 * 60 * 24
         for file in os.listdir('data/log'):
-            if file.endswith('.log') or not any(file.startswith(prefix) for prefix in saveLogList):
+            if (file.endswith('.log') and file not in saveLogList) or not any(file.startswith(prefix) for prefix in saveLogList):
                 logger = logging.getLogger()
                 try:
                     os.remove(f'data/log/{file}')
