@@ -41,7 +41,7 @@ class CopyItem:
         self.doingKey = None
 
     def doByThread(self):
-        doThread = threading.Thread(target=self.doIt)
+        doThread = threading.Thread(target=self.doIt, name='复制项目线程')
         doThread.start()
 
     def doIt(self):
@@ -135,7 +135,7 @@ class CreateStrmItem:
         self.doingKey = None
 
     def doByThread(self):
-        doThread = threading.Thread(target=self.doIt)
+        doThread = threading.Thread(target=self.doIt, name='创建strm线程')
         doThread.start()
 
     def doIt(self):
@@ -187,11 +187,12 @@ class JobTask:
         self.firstSync = None
         # 手动中止标识
         self.breakFlag = False
-        syncThread = threading.Thread(target=self.sync)
+        syncThread = threading.Thread(target=self.sync, name=f'同步线程{taskId}')
         syncThread.start()
         self.currentTasks = {}
-        submitThread = threading.Thread(target=self.taskSubmit)
+        submitThread = threading.Thread(target=self.taskSubmit, name=f'任务提交线程{taskId}')
         submitThread.start()
+        threading.Thread(target=self.monitor_threads, daemon=True, name=f'线程看门狗{taskId}').start()
 
     def getCurrent(self):
         """
@@ -316,62 +317,76 @@ class JobTask:
         队列检验与提交
         :return:
         """
-        while True:
-            if self.breakFlag:
-                break
-            time.sleep(0.5)
-            doingNums = len(self.doing.keys())
-            waitingNums = len(self.waiting)
-            if not self.scanFinish or doingNums != 0 or waitingNums != 0:
-                while doingNums < 20:
-                    if self.breakFlag:
-                        break
-                    if self.waiting:
-                        item = self.waiting[0]
-                        if int(time.time()) - item.createTime > 30 * 60:
-                            self.waiting = []
-                            self.doing = {}
+        try:
+            while True:
+                if self.breakFlag:
+                    break
+                time.sleep(0.5)
+                doingNums = len(self.doing.keys())
+                waitingNums = len(self.waiting)
+                if not self.scanFinish or doingNums != 0 or waitingNums != 0:
+                    while doingNums < 20:
+                        if self.breakFlag:
                             break
-                    if self.doing:
-                        for key in self.doing.keys():
-                            if int(time.time()) - self.doing[key].createTime > 30 * 60:
-                                del self.doing[key]
-                    if waitingNums == 0:
-                        break
-                    else:
-                        if self.firstSync is None:
-                            self.firstSync = time.time()
-                        self.queueNum += 1
-                        self.doing[self.queueNum] = self.waiting.pop(0)
-                        self.doing[self.queueNum].doingKey = self.queueNum
-                        try:
-                            self.doing[self.queueNum].doByThread()
-                        except Exception as e:
-                            logger = logging.getLogger()
-                            errMsg = G('do_job_err').format(G('src'), '执行任务错误：', str(e))
-                            logger.error(errMsg)
-                            logger.exception(e)
-                            del self.doing[self.queueNum]
-                        doingNums = len(self.doing.keys())
-                        waitingNums = len(self.waiting)
-            else:
-                break
-        tryTime = 0
-        while len(self.doing.keys()) > 0:
-            tryTime += 1
-            time.sleep(.5)
-            if tryTime > 3:
-                break
-        jobMapper.addJobTaskItemMany(self.finish)
-        self.updateTaskStatus()
-        self.jobClient.jobDoing = False
-        self.jobClient.currentJobTask = None
+                        if self.waiting:
+                            item = self.waiting[0]
+                            if int(time.time()) - item.createTime > 30 * 60:
+                                self.waiting = []
+                                self.doing = {}
+                                break
+                        if self.doing:
+                            for key in self.doing.keys():
+                                if int(time.time()) - self.doing[key].createTime > 30 * 60:
+                                    del self.doing[key]
+                        if waitingNums == 0:
+                            break
+                        else:
+                            if self.firstSync is None:
+                                self.firstSync = time.time()
+                            self.queueNum += 1
+                            self.doing[self.queueNum] = self.waiting.pop(0)
+                            self.doing[self.queueNum].doingKey = self.queueNum
+                            try:
+                                self.doing[self.queueNum].doByThread()
+                            except Exception as e:
+                                logger = logging.getLogger()
+                                errMsg = G('do_job_err').format(G('src'), '执行任务错误：', str(e))
+                                logger.error(errMsg)
+                                logger.exception(e)
+                                del self.doing[self.queueNum]
+                            doingNums = len(self.doing.keys())
+                            waitingNums = len(self.waiting)
+                else:
+                    break
+            tryTime = 0
+            while len(self.doing.keys()) > 0:
+                tryTime += 1
+                time.sleep(.5)
+                if tryTime > 3:
+                    break
+            jobMapper.addJobTaskItemMany(self.finish)
+            self.updateTaskStatus()
+            self.jobClient.jobDoing = False
+            self.jobClient.currentJobTask = None
+        except Exception as e:
+            import traceback
+            logger = logging.getLogger()
+            logger.info(f"提交任务进程异常: {e}\n{traceback.format_exc()}")
+            # 重新调用本方法保证线程持续运行
+            self.taskSubmit()
 
     def retryJob(self):
         """
         重试失败作业
         """
         return
+
+    def monitor_threads(self):
+        logger = logging.getLogger()
+        while True:
+            time.sleep(10)
+            alive_threads = [(t.name, t.is_alive()) for t in threading.enumerate()]
+            logger.info(f"定时检查线程状态返回，正常的运行状态名称如下: {alive_threads}")
 
 
     def copyHook(self, srcPath, dstPath, name, size, alistTaskId=None, status=0, errMsg=None, isPath=0,
@@ -1049,7 +1064,7 @@ class JobClient:
         """
         if self.jobDoing:
             raise Exception(G('job_running'))
-        doJobThread = threading.Thread(target=self.doJob)
+        doJobThread = threading.Thread(target=self.doJob, name=f'手动触发任务线程{self.jobId}')
         doJobThread.start()
 
     def doByTime(self):
