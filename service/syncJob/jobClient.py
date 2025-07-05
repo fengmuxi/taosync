@@ -330,7 +330,7 @@ class JobTask:
                         item = self.waiting[0]
                         if int(time.time()) - item.createTime > 30 * 60:
                             self.waiting = []
-                            self.doing = []
+                            self.doing = {}
                             break
                     if self.doing:
                         for key in self.doing.keys():
