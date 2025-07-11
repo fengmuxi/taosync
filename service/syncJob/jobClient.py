@@ -338,7 +338,7 @@ class JobTask:
                         for key in list(self.doing.keys()):
                             doing = self.doing.get(key)
                             if doing:
-                                if int(time.time()) - doing.createTime > 30 * 60:
+                                if int(time.time()) - doing.startTime > 30 * 60:
                                     del self.doing[key]
                         if waitingNums == 0:
                             break
@@ -348,6 +348,7 @@ class JobTask:
                             self.queueNum += 1
                             self.doing[self.queueNum] = self.waiting.pop(0)
                             self.doing[self.queueNum].doingKey = self.queueNum
+                            self.doing[self.queueNum].startTime = int(time.time())
                             try:
                                 self.doing[self.queueNum].doByThread()
                             except Exception as e:
