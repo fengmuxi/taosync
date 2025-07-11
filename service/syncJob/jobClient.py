@@ -328,12 +328,12 @@ class JobTask:
                     while doingNums < 20:
                         if self.breakFlag:
                             break
-                        if self.waiting:
-                            item = self.waiting[0]
-                            if int(time.time()) - item.createTime > 30 * 60:
-                                self.waiting = []
-                                self.doing = {}
-                                break
+                        # if self.waiting:
+                        #     item = self.waiting[0]
+                        #     if int(time.time()) - item.createTime > 30 * 60:
+                        #         self.waiting = []
+                        #         self.doing = {}
+                        #         break
                         if self.doing:
                             for key in self.doing.keys():
                                 if int(time.time()) - self.doing[key].createTime > 30 * 60:
