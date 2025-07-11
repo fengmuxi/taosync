@@ -317,14 +317,14 @@ class JobTask:
         队列检验与提交
         :return:
         """
-        try:
-            while True:
-                if self.breakFlag:
-                    break
-                time.sleep(0.5)
-                doingNums = len(self.doing.keys())
-                waitingNums = len(self.waiting)
-                if not self.scanFinish or doingNums != 0 or waitingNums != 0:
+        while True:
+            if self.breakFlag:
+                break
+            time.sleep(0.5)
+            doingNums = len(self.doing.keys())
+            waitingNums = len(self.waiting)
+            if not self.scanFinish or doingNums != 0 or waitingNums != 0:
+                try:
                     while doingNums < 20:
                         if self.breakFlag:
                             break
@@ -334,9 +334,12 @@ class JobTask:
                         #         self.waiting = []
                         #         self.doing = {}
                         #         break
+
                         for key in list(self.doing.keys()):
-                            if int(time.time()) - self.doing[key].createTime > 30 * 60:
-                                del self.doing[key]
+                            doing = self.doing.get(key)
+                            if doing:
+                                if int(time.time()) - doing.createTime > 30 * 60:
+                                    del self.doing[key]
                         if waitingNums == 0:
                             break
                         else:
@@ -355,24 +358,22 @@ class JobTask:
                                 del self.doing[self.queueNum]
                             doingNums = len(self.doing.keys())
                             waitingNums = len(self.waiting)
-                else:
-                    break
-            tryTime = 0
-            while len(self.doing.keys()) > 0:
-                tryTime += 1
-                time.sleep(.5)
-                if tryTime > 3:
-                    break
-            jobMapper.addJobTaskItemMany(self.finish)
-            self.updateTaskStatus()
-            self.jobClient.jobDoing = False
-            self.jobClient.currentJobTask = None
-        except Exception as e:
-            import traceback
-            logger = logging.getLogger()
-            logger.info(f"提交任务进程异常: {e}\n{traceback.format_exc()}")
-            # 重新调用本方法保证线程持续运行
-            self.taskSubmit()
+                except Exception as e:
+                    import traceback
+                    logger = logging.getLogger()
+                    logger.info(f"提交任务进程异常: {e}\n{traceback.format_exc()}")
+            else:
+                break
+        tryTime = 0
+        while len(self.doing.keys()) > 0:
+            tryTime += 1
+            time.sleep(.5)
+            if tryTime > 3:
+                break
+        jobMapper.addJobTaskItemMany(self.finish)
+        self.updateTaskStatus()
+        self.jobClient.jobDoing = False
+        self.jobClient.currentJobTask = None
 
     def retryJob(self):
         """
