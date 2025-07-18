@@ -84,6 +84,28 @@ def addJobClient(job, isInit=False):
     jobClientList[int(client.jobId)] = client
 
 
+def copyJobClient(job, isInit=False):
+    """
+    复制作业客户端
+    :param isInit: 是否是初始化过程
+    :param job: {
+        enable: 1,
+        srcPath: '',
+        dstPath: '',
+        alistId: null,
+        speed: 0,
+        method: 0,
+        interval: 60
+    }
+    :return:
+    """
+    cleanJobInput(job)
+    job['enable'] = 0
+    client = jobClient.JobClient(job, isInit)
+    global jobClientList
+    jobClientList[int(client.jobId)] = client
+
+
 def editJobClient(job):
     """
     编辑作业客户端

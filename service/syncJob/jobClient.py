@@ -21,6 +21,8 @@ from mapper import jobMapper
 from service.alist import alistService
 from service.syncJob import taskService
 import hashlib
+import secrets
+import string
 
 
 class CopyItem:
@@ -998,6 +1000,12 @@ class JobClient:
             job['enable'] = 1
         if 'method' not in job:
             job['method'] = 0
+        if 'copy' in job:
+            job['remark'] = f'{job["remark"]}-copy{"".join(secrets.choice(string.digits) for _ in range(6))}'
+            job['srcPath'] = f'{job["srcPath"]}copy{"".join(secrets.choice(string.digits) for _ in range(6))}'
+            job['dstPath'] = f'{job["dstPath"]}copy{"".join(secrets.choice(string.digits) for _ in range(6))}'
+            addJobId = jobMapper.addJob(job)
+            job = jobMapper.getJobById(addJobId)
         if 'id' not in job:
             addJobId = jobMapper.addJob(job)
             job = jobMapper.getJobById(addJobId)

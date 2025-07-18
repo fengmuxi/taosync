@@ -55,7 +55,10 @@ class Job(BaseHandler):
     @handle_request
     def post(self, req):
         if 'id' in req:
-            jobService.editJobClient(req)
+            if 'copy' in req:
+                jobService.copyJobClient(req)
+            else:
+                jobService.editJobClient(req)
         else:
             jobService.addJobClient(req)
 

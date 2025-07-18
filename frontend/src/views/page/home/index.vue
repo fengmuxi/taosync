@@ -234,10 +234,12 @@
 					</div>
 				</template>
 			</el-table-column>
-			<el-table-column label="操作" align="center" width="200">
+			<el-table-column label="操作" align="center" width="300">
 				<template slot-scope="scope">
 					<el-button icon="el-icon-caret-right" type="primary" @click="putJob(scope.row)"
 						:loading="btnLoading" size="mini">手动执行</el-button>
+          <el-button icon="el-icon-document-copy" type="primary" @click="copyJob(scope.row)"
+                     :loading="btnLoading" size="mini">复制任务</el-button>
 					<el-button icon="el-icon-view" type="success" @click="detail(scope.row.id)" :loading="btnLoading"
 						size="mini">详情</el-button>
 				</template>
@@ -712,6 +714,21 @@
 				}).catch(err => {
 					this.btnLoading = false;
 				})
+			},
+      copyJob(row, pause = null) {
+				this.btnLoading = true;
+        let data = JSON.parse(JSON.stringify(row));
+        data.copy = '0'
+        jobPost(data).then(res => {
+          this.btnLoading = false;
+          this.$message({
+            message: res.msg,
+            type: 'success'
+          });
+          this.getJobList();
+        }).catch(err => {
+          this.btnLoading = false;
+        })
 			},
 			disableJobShow(row, disableIsDel) {
 				this.disableIsDel = disableIsDel;
