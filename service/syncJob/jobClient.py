@@ -776,6 +776,8 @@ class JobTask:
             # 已在listDir做出日志打印等操作，此处啥都不用做
             return
         logger = logging.getLogger()
+        # 创建一个集合来记录已处理的源文件
+        processed_src_files = set()
         # 判断将刮削文件同步至源目录
         if self.job['method'] == 3 and self.job['strm_src_sync'] == 1 and strmSpec:
             for key in dstFiles.keys():
@@ -788,6 +790,7 @@ class JobTask:
                                 and self.is_path_prefix(srcPath, strm_src_sync_cover_possess)):
                         logger.info(f'[{dstPath + key}]源目录没有这个文件或该目录需要强制同步(即需要同步)')
                         self.copyFile(dstPath, srcPath, key, dstFiles[key]['size'])
+                        processed_src_files.add(key)
 
         # 判断删除目标目录在源目录不存在的文件
         if self.job['method'] == 3 and self.job['strm_dst_sync'] == 1:
@@ -810,6 +813,10 @@ class JobTask:
                         logger.info(f'存在下载规则{strmSpec}正在为[{srcPath + key}]匹配......')
                         if re.search(strmSpec, key):
                             logger.info(f'[{srcPath + key}]符合下载文件正则')
+                            # 检查是否已处理过此文件
+                            if key in processed_src_files:
+                                logger.info(f'[{srcPath + key}]已处理过，跳过下载')
+                                continue
                             # 目标目录没有这个文件或文件大小不匹配(即需要同步)
                             if key not in dstFiles or dstFiles[key]['size'] != srcFiles[key]['size']:
                                 logger.info(f'[{srcPath + key}]目标目录没有这个文件或文件大小不匹配(即需要同步)')
