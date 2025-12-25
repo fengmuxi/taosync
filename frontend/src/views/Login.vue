@@ -1,6 +1,6 @@
 <template>
-	<div class="login">
-		<div class="loginArea">
+	<div class="login" :class="vuex_theme">
+		<div class="loginArea" :class="vuex_theme">
 			<div class="logo">桃桃的自动同步工具</div>
 			<div class="title">密码登录</div>
 			<el-form :model="loginForm" :rules="rules" ref="loginForm" label-width="0">
@@ -17,8 +17,13 @@
 			<el-button class="login-button" size="medium" type="primary" :loading="loading"
 				@click="login">登录</el-button>
 		</div>
+		<!-- 主题切换按钮 -->
+		<div class="theme-switch" @click="toggleTheme">
+			<i :class="vuex_theme === 'dark' ? 'el-icon-moon' : 'el-icon-sunny'"></i>
+			<span>{{ vuex_theme === 'dark' ? '浅色' : '深色' }}</span>
+		</div>
 		<el-dialog :close-on-click-modal="false" :visible.sync="showPwd" :append-to-body="true" title="重置密码"
-			width="560px" :before-close="closePwd">
+			width="90%" max-width="560px" :before-close="closePwd">
 			<div>
 				<el-form :model="pwdForm" :rules="pwdRules" ref="resetForm" label-width="80px">
 					<el-form-item prop="userName" label="用户名">
@@ -109,7 +114,10 @@
 				}
 			};
 		},
-		created() {},
+		created() {
+			// 初始化主题
+			document.documentElement.className = this.vuex_theme;
+		},
 		methods: {
 			login() {
 				this.$refs.loginForm.validate((valid) => {
@@ -159,6 +167,14 @@
 						return false;
 					}
 				});
+			},
+			toggleTheme() {
+				// 切换主题模式
+				const newTheme = this.vuex_theme === 'dark' ? 'light' : 'dark';
+				this.$setVuex('vuex_theme', newTheme);
+				// 标记用户已手动设置主题
+				this.$setVuex('vuex_theme_manually_set', true);
+				document.documentElement.className = newTheme;
 			}
 		}
 	}
@@ -167,6 +183,7 @@
 	.login {
 		display: flex;
 		align-items: center;
+		justify-content: center;
 		position: fixed;
 		top: 0;
 		bottom: 0;
@@ -174,29 +191,116 @@
 		right: 0;
 		background: url(~@/assets/img/login-bg.jpg) no-repeat center;
 		background-size: cover;
+		// 在移动端调整背景图片大小
+		@media (max-width: 768px) {
+			background-size: auto 100%;
+		}
+
+		// 浅色主题背景遮罩
+		&.light {
+			&::before {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(245, 247, 250, 0.85) 100%);
+				backdrop-filter: blur(10px);
+				z-index: 0;
+			}
+
+			.loginArea {
+				background: rgba(255, 255, 255, 0.98);
+				color: var(--text-primary);
+				box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+				backdrop-filter: blur(10px);
+
+				:deep(.el-input) {
+					.el-input__inner {
+						background-color: transparent;
+						color: var(--text-primary);
+						border: 1px solid var(--border-color);
+					}
+				}
+
+				.title {
+					color: var(--text-primary);
+					border-bottom: 1px solid var(--border-color);
+				}
+			}
+		}
+		
+		// 深色主题 - 黑金配色
+		&.dark {
+			&::before {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				background: linear-gradient(135deg, rgba(10, 10, 10, 0.98) 0%, rgba(26, 26, 26, 0.95) 100%);
+				backdrop-filter: blur(5px);
+				z-index: 0;
+			}
+
+			.loginArea {
+				background: rgba(26, 26, 26, 0.95);
+				color: #FFF;
+				box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+				backdrop-filter: blur(10px);
+
+				:deep(.el-input) {
+					.el-input__inner {
+						background-color: transparent;
+						color: #FFF;
+						border: 1px solid var(--color-primary);
+					}
+				}
+
+				.title {
+					color: var(--color-primary);
+					border-bottom: 1px solid var(--border-color);
+				}
+			}
+		}
 
 		.loginArea {
-			background: rgba(16, 30, 65, 0.95);
-			width: 520px;
+			position: relative;
+			z-index: 1;
+			width: 90%;
+			max-width: 520px;
 			box-sizing: border-box;
-			padding: 30px 60px;
-			border-radius: 4px;
-			margin-left: 5%;
-			color: #FFF;
+			padding: 30px;
+			border-radius: 8px;
+			margin: 0 auto;
+			// 在移动端调整内边距和边框圆角
+			@media (max-width: 768px) {
+				padding: 20px;
+				border-radius: 12px;
+				width: 95%;
+			}
 
 			:deep(.el-input) {
-				font-size: 20px;
+				font-size: 16px;
+				// 在移动端调整字体大小
+				@media (max-width: 768px) {
+					font-size: 14px;
+				}
 
 				.el-input__inner {
-					background-color: transparent;
-					color: #FFF;
-					height: 60px;
-					font-size: 20px;
-					border: 1px solid #FFF;
+				height: 50px;
+				font-size: 16px;
+				// 在移动端调整高度和字体大小
+				@media (max-width: 768px) {
+					height: 44px;
+					font-size: 14px;
+				}
 				}
 
 				.el-input__inner:focus {
-					border: 1px solid #409eff;
+				border: 1px solid #409eff;
 				}
 			}
 
@@ -206,67 +310,141 @@
 
 			:deep(.el-input--prefix .el-input__inner) {
 				padding-left: 40px;
+				// 在移动端调整内边距
+				@media (max-width: 768px) {
+					padding-left: 35px;
+				}
 			}
 
 			:deep(.el-form-item) {
-				margin-bottom: 28px;
+				margin-bottom: 20px;
+				// 在移动端调整间距
+				@media (max-width: 768px) {
+					margin-bottom: 15px;
+				}
 
 				.el-form-item__error {
-					font-size: 16px;
+				font-size: 14px;
+				// 在移动端调整字体大小
+				@media (max-width: 768px) {
+					font-size: 12px;
+				}
 				}
 			}
 
 			:deep(.el-button--primary) {
-				font-size: 20px;
-				padding: 19px 20px;
+				font-size: 18px;
+				padding: 15px 20px;
+				// 在移动端调整字体大小和内边距
+				@media (max-width: 768px) {
+					font-size: 16px;
+					padding: 12px 20px;
+				}
 			}
 
 			.logo {
 				background-image: url('/logo-200-64.png');
 				background-position: center 0;
 				background-repeat: no-repeat;
-				width: 400px;
+				width: 100%;
+				max-width: 600px;
 				padding-top: 80px;
 				text-align: center;
 				letter-spacing: 6px;
 				font-size: 20px;
+				// 在移动端调整字体大小
+				@media (max-width: 768px) {
+					font-size: 16px;
+					background-size: contain;
+					padding-top: 60px;
+				}
 			}
 
 			.title {
-				margin-top: 60px;
+				margin-top: 40px;
 				font-size: 24px;
 				font-weight: 500;
-				color: #ffffff;
 				line-height: 28px;
 				text-align: center;
 				padding-bottom: 13px;
-				border-bottom: 1px solid rgba(238, 238, 238, 0.2);
-				margin-bottom: 43px;
+				margin-bottom: 30px;
 				position: relative;
+				// 在移动端调整间距和字体大小
+				@media (max-width: 768px) {
+					margin-top: 30px;
+					font-size: 20px;
+					margin-bottom: 20px;
+				}
 
 				&::after {
-					content: "";
-					display: block;
-					width: 53px;
-					height: 6px;
-					background: url(~@/assets/img/login-line-rectangle.png);
-					margin: 0 auto;
-					position: absolute;
-					bottom: 0;
-					left: 50%;
-					transform: translateX(-50%);
+				content: "";
+				display: block;
+				width: 53px;
+				height: 6px;
+				background: url(~@/assets/img/login-line-rectangle.png);
+				background-size: contain;
+				background-repeat: no-repeat;
+				margin: 0 auto;
+				position: absolute;
+				bottom: 0;
+				left: 50%;
+				transform: translateX(-50%);
 				}
 			}
 
 			.login-button {
 				width: 100%;
 				margin: 20px 0 20px 0;
+				// 在移动端调整间距
+				@media (max-width: 768px) {
+					margin: 15px 0 15px 0;
+				}
 			}
 
 			.foget {
 				text-align: right;
 				cursor: pointer;
 				color: #409eff;
+				font-size: 14px;
+				// 在移动端调整字体大小
+				@media (max-width: 768px) {
+					font-size: 12px;
+				}
+			}
+		}
+
+		// 主题切换按钮样式
+		.theme-switch {
+			position: absolute;
+			top: 20px;
+			right: 20px;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			padding: 8px 16px;
+			background-color: rgba(0, 0, 0, 0.2);
+			border-radius: 20px;
+			cursor: pointer;
+			color: #fff;
+			font-size: 14px;
+			transition: all 0.3s ease;
+			z-index: 1000;
+
+			&:hover {
+				background-color: rgba(0, 0, 0, 0.3);
+			}
+
+			&.light {
+				background-color: rgba(255, 255, 255, 0.8);
+				color: var(--text-primary);
+
+				&:hover {
+					background-color: rgba(255, 255, 255, 0.9);
+				}
+			}
+
+			i {
+				font-size: 18px;
 			}
 		}
 	}

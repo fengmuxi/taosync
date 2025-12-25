@@ -67,3 +67,74 @@ export function delNotify(notifyId) {
 		}
 	})
 }
+
+// 获取消息记录列表
+export function getNotifyLogList(params) {
+	return request({
+		url: '/notify',
+		headers: {
+			isMask: false
+		},
+		method: 'get',
+		params: params
+	})
+}
+
+// 删除消息记录
+export function deleteNotifyLog(logIds) {
+	return request({
+		url: '/notify',
+		headers: {
+			isMask: false
+		},
+		method: 'delete',
+		data: {
+			logIds
+		}
+	})
+}
+
+// 重新发送通知
+export function resendNotify(logId) {
+	return request({
+		url: '/notify',
+		headers: {
+			isMask: false
+		},
+		method: 'post',
+		data: {
+			logId,
+			resend: true
+		}
+	})
+}
+
+// 批量重新发送通知
+export function batchResendNotify(logIds) {
+	return request({
+		url: '/notify',
+		headers: {
+			isMask: false
+		},
+		method: 'post',
+		data: {
+			logIds,
+			resend: true
+		}
+	})
+}
+
+// 导出消息记录
+export function exportNotifyLog(params) {
+	return request({
+		url: '/notify',
+		headers: {
+			isMask: false
+		},
+		method: 'get',
+		params: {
+			export: true,
+			...params
+		}
+	})
+}

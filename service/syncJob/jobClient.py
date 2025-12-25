@@ -23,6 +23,8 @@ from service.syncJob import taskService
 import hashlib
 import secrets
 import string
+from common.feiniu import feiniu_manager
+from service.notify.notifyService import sendNotify, getNotifyList
 
 
 class CopyItem:
@@ -96,7 +98,11 @@ class CopyItem:
             if taskInfo['state'] == self.status and taskInfo['progress'] == self.progress:
                 continue
             self.status = taskInfo['state']
+            # 修复进度显示NAN问题，确保progress始终是有效的数字
             self.progress = taskInfo['progress']
+            if self.progress is None or self.progress == '':
+                self.progress = 0.0
+            self.progress = float(self.progress)
             self.errMsg = taskInfo['error'] if taskInfo['error'] else None
             # 删除结束的任务
             if taskInfo['state'] in [2, 4, 7]:
@@ -189,6 +195,8 @@ class JobTask:
         self.firstSync = None
         # 手动中止标识
         self.breakFlag = False
+        # 保存需要刷新的飞牛路径集合
+        self.feiniu_refresh_paths = set()
         syncThread = threading.Thread(target=self.sync, name=f'同步线程{taskId}')
         syncThread.start()
         self.currentTasks = {}
@@ -374,6 +382,322 @@ class JobTask:
             if tryTime > 3:
                 break
         jobMapper.addJobTaskItemMany(self.finish)
+        
+        # 任务结束后，统一处理飞牛刷新路径
+        if self.feiniu_refresh_paths:
+            # 提取必要数据，避免线程持有self引用，确保手动终止时能立即执行
+            refresh_paths = self.feiniu_refresh_paths.copy()
+            job_data = dict(self.job)
+            task_id = self.taskId
+            
+            # 使用异步线程处理飞牛刷新路径，不阻塞job任务结束流程
+            def async_feiniu_refresh(paths, job, task_id):
+                logger = logging.getLogger()
+                logger.info(f"开始异步处理飞牛刷新路径，共有 {len(paths)} 个路径")
+                
+                # 获取启用的通知配置
+                enabled_notifies = []
+                try:
+                    enabled_notifies = getNotifyList(needEnable=True)
+                    logger.info(f"获取到 {len(enabled_notifies)} 个启用的通知配置")
+                except Exception as e:
+                    logger.warning(f"获取通知配置失败: {str(e)}")
+                
+                # 定义发送通知的辅助函数
+                def send_notification(title, content, message_type='error'):
+                    if not enabled_notifies:
+                        logger.info("没有启用的通知配置，跳过发送通知")
+                        return
+                    
+                    for notify in enabled_notifies:
+                        try:
+                            logger.info(f"使用通知配置 {notify['id']} 发送通知")
+                            sendNotify(
+                                notify,
+                                title,
+                                content,
+                                message_type=message_type,
+                                device_info=f"task_id:{task_id}"
+                            )
+                            logger.info(f"通知发送成功")
+                        except Exception as e:
+                            logger.error(f"发送通知失败: {str(e)}")
+                            import traceback
+                            logger.error(f"  - 异常堆栈: {traceback.format_exc()}")
+                
+                try:
+                    # 路径处理：由于self.feiniu_refresh_paths本身就是set，且添加时已进行格式统一，直接转换为列表即可
+                    if not paths:
+                        logger.info(f"没有需要处理的路径，跳过处理")
+                        return
+
+                    # ------------------------ 路径合并优化 ------------------------
+                    # 按规则合并路径：合并"/1/2/3"和"/1/2"为"/1/2"，但不合并"/1/2/3"和"/1/2/4"
+                    def merge_paths(paths):
+                        """按规则合并路径，保留最上级目录
+                        
+                        例如：
+                        - ["/1/2/3", "/1/2", "/1/2/4", "/1/3"] → ["/1/2", "/1/3"]
+                        - ["/a/b/c", "/a/b", "/a/b/d", "/a/c/e"] → ["/a/b", "/a/c/e"]
+                        """
+                        if not paths:
+                            return []
+                        
+                        # 排序路径，按长度从小到大
+                        paths = list(paths)
+                        paths.sort(key=len)
+                        
+                        # 保留最上级目录，去除所有子目录
+                        merged = []
+                        for path in paths:
+                            # 检查当前路径是否是已保留路径的子目录
+                            is_subdir = any(parent in path and path[len(parent)] == '/' for parent in merged)
+                            if not is_subdir:
+                                # 同时检查是否已有子目录在结果中，如果有则替换为当前更高级的目录
+                                # 先移除所有以当前路径为前缀的子目录
+                                merged = [p for p in merged if not (path in p and p[len(path)] == '/')]
+                                merged.append(path)
+                        
+                        return merged
+                    
+                    # 执行路径合并
+                    merged_folder_paths = merge_paths(paths)
+                    
+                    # 记录路径合并的详细信息
+                    logger.info(f"【飞牛影视管理器】路径合并优化：")
+                    logger.info(f"【飞牛影视管理器】  - 合并前路径数: {len(paths)}个")
+                    logger.info(f"【飞牛影视管理器】  - 合并后路径数: {len(merged_folder_paths)}个")
+                    
+                    if len(paths) != len(merged_folder_paths):
+                        logger.info(f"【飞牛影视管理器】  - 合并前路径:")
+                        for path in sorted(paths)[:10]:
+                            logger.info(f"【飞牛影视管理器】      {path}")
+                        if len(paths) > 10:
+                            logger.info(f"【飞牛影视管理器】      ... 还有 {len(paths) - 10} 个路径")
+                        
+                        logger.info(f"【飞牛影视管理器】  - 合并后路径:")
+                        for path in sorted(merged_folder_paths)[:10]:
+                            logger.info(f"【飞牛影视管理器】      {path}")
+                        if len(merged_folder_paths) > 10:
+                            logger.info(f"【飞牛影视管理器】      ... 还有 {len(merged_folder_paths) - 10} 个路径")
+                    # ------------------------ 路径合并优化结束 ------------------------
+                    
+                    # 解析多路径映射关系
+                    def parse_path_mappings(job):
+                        """解析作业配置中的多路径映射关系
+                        
+                        支持三种格式：
+                        1. 旧格式1：单个映射，使用strm_path、feiniu_library_id、feiniu_media_path字段
+                        
+                        返回格式：[{"strm_path": "", "library_id": "", "media_path": ""}]
+                        """
+                        mappings = []
+                        
+                        # 1. 尝试从新的统一字段解析（飞牛媒体库路径映射）
+                        strm_path_mapping = job.get('strm_path_mapping')
+                        if strm_path_mapping:
+                            # 新格式：多个映射，用|分隔
+                            mapping_pairs = strm_path_mapping.split('|')
+                            for mapping in mapping_pairs:
+                                parts = mapping.split(':')
+                                if len(parts) == 3:
+                                    # 完整格式：strm_path:library_id:media_path
+                                    strm_path = parts[0].strip()
+                                    library_id = parts[1].strip()
+                                    media_path = parts[2].strip()
+                                    
+                                    # 验证映射关系的完整性
+                                    if strm_path and library_id:
+                                        mappings.append({
+                                            "strm_path": strm_path,
+                                            "library_id": library_id,
+                                            "media_path": media_path
+                                        })
+                                    else:
+                                        logger.warning(f"跳过无效的路径映射关系（缺少必要字段）: {mapping}")
+                        
+                        # 验证映射关系的唯一性
+                        unique_mappings = []
+                        seen = set()
+                        for mapping in mappings:
+                            key = f"{mapping['strm_path']}|{mapping['library_id']}"
+                            if key not in seen:
+                                seen.add(key)
+                                unique_mappings.append(mapping)
+                            else:
+                                logger.warning(f"跳过重复的路径映射关系: {mapping}")
+                        
+                        return unique_mappings
+                    
+                    # 获取路径映射关系
+                    path_mappings = parse_path_mappings(job)
+                    logger.info(f"解析到 {len(path_mappings)} 个路径映射关系")
+                    for mapping in path_mappings:
+                        logger.info(f"  - 映射关系: {mapping['strm_path']} -> 媒体库ID: {mapping['library_id']}, 媒体路径: {mapping['media_path']}")
+                    
+                    # 按媒体库分组路径
+                    library_paths = {} 
+                    unmatched_paths = []
+                    
+                    for path in merged_folder_paths:
+                        # 找到匹配的映射关系
+                        matched = False
+                        # 按strm_path长度降序排序，确保最长匹配优先
+                        sorted_mappings = sorted(path_mappings, key=lambda x: len(x['strm_path']), reverse=True)
+                        
+                        for mapping in sorted_mappings:
+                            strm_path = mapping['strm_path']
+                            # 标准化路径分隔符
+                            normalized_path = path.replace('\\', '/')
+                            normalized_strm_path = strm_path.replace('\\', '/')
+                            
+                            # 检查路径是否以strm_path开头
+                            if normalized_path.startswith(normalized_strm_path):
+                                # 将路径映射到对应的媒体库
+                                if mapping['library_id'] not in library_paths:
+                                    library_paths[mapping['library_id']] = {
+                                        'paths': [],
+                                        'mapping': mapping
+                                    }
+                                # 计算相对路径并映射到媒体库路径
+                                relative_path = normalized_path[len(normalized_strm_path):].lstrip('/')
+                                # 保持媒体路径的原始分隔符
+                                media_path = mapping['media_path']
+                                if '\\' in media_path:
+                                    mapped_path = os.path.join(media_path, relative_path.replace('/', '\\'))
+                                else:
+                                    mapped_path = os.path.join(media_path, relative_path)
+                                
+                                # 应用统一的路径预处理
+                                mapped_path = feiniu_manager._preprocess_path(mapped_path, media_path, strm_path, None)
+                                
+                                library_paths[mapping['library_id']]['paths'].append(mapped_path)
+                                matched = True
+                                logger.debug(f"路径 '{path}' 匹配到映射关系: {mapping['strm_path']} -> 媒体库ID: {mapping['library_id']}, 映射路径: {mapped_path}")
+                                break
+                        
+                        if not matched:
+                            # 没有映射关系，跳过
+                            unmatched_paths.append(path)
+                            logger.warning(f"路径 '{path}' 没有找到对应的映射关系，跳过刷新")
+                    
+                    # 记录未匹配到映射关系的路径
+                    if unmatched_paths:
+                        logger.info(f"共有 {len(unmatched_paths)} 个路径未匹配到映射关系，跳过刷新")
+                        for path in unmatched_paths:
+                            logger.info(f"  - 跳过路径: {path}")
+                    
+                    # 调用飞牛刷新路径，按媒体库分组刷新
+                    for library_id, data in library_paths.items():
+                        try:
+                            mapping = data['mapping']
+                            # 对路径进行去重，确保幂等性
+                            paths = list(set(data['paths']))
+                            
+                            if not paths:
+                                logger.info(f"媒体库 {library_id} 没有需要刷新的路径，跳过刷新")
+                                continue
+                            
+                            logger.info(f"调用飞牛刷新媒体库 {library_id} 的 {len(paths)} 个路径")
+                            logger.info(f"  - 媒体库ID: {library_id}")
+                            logger.info(f"  - 映射关系: {mapping['strm_path']} -> {mapping['media_path']}")
+                            for i, path in enumerate(paths, 1):
+                                logger.info(f"  - 待刷新路径 {i}: {path}")
+                            
+                            # 调用飞牛刷新路径，将所有路径一次性传入
+                            feiniu_id = job.get('feiniuId')
+                            logger.info(f"  - 飞牛配置ID: {feiniu_id}")
+                            
+                            # 调用飞牛刷新路径
+                            feiniu_manager.refresh_path(
+                                paths, 
+                                feiniu_id=feiniu_id,
+                                media_library_id=library_id,
+                                media_path=mapping['media_path'],
+                                job_id=job.get('id'),
+                            )
+                            
+                            logger.info(f"飞牛刷新媒体库 {library_id} 成功，共刷新 {len(paths)} 个路径")
+                            logger.info(f"  - 刷新触发条件: 作业任务执行完毕")
+                            logger.info(f"  - 映射匹配结果: 成功匹配 {len(data['paths'])} 个路径")
+                        except Exception as e:
+                            logger.error(f"飞牛刷新媒体库 {library_id} 失败: {str(e)}")
+                            logger.error(f"  - 失败原因: {str(e)}")
+                            logger.error(f"  - 媒体库ID: {library_id}")
+                            logger.error(f"  - 待刷新路径数量: {len(paths)}")
+                            # 记录异常堆栈信息
+                            import traceback
+                            error_stack = traceback.format_exc()
+                            logger.error(f"  - 异常堆栈: {error_stack}")
+                            
+                            # 格式化异常信息，发送通知
+                            import datetime
+                            error_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                            title = f"【飞牛刷新失败】媒体库 {library_id} 刷新路径失败"
+                            content = f"""TaoSync 飞牛刷新媒体库失败通知
+
+                            任务ID: {task_id}
+                            作业ID: {job.get('id', '未知')}
+                            媒体库ID: {library_id}
+                            映射关系: {mapping['strm_path']} -> {mapping['media_path']}
+                            失败时间: {error_time}
+                            失败原因: {str(e)}
+                            待刷新路径数量: {len(paths)}
+
+                            异常堆栈:
+                            {error_stack}
+                            """
+                            
+                            try:
+                                send_notification(title, content, message_type='feiniu_refresh_error')
+                                logger.info("飞牛刷新失败通知发送成功")
+                            except Exception as notify_e:
+                                logger.error(f"发送飞牛刷新失败通知失败: {str(notify_e)}")
+                            
+                            # 对于刷新失败的情况，我们已经在feiniu_manager.refresh_path中实现了重试机制
+                            # 所以这里只需要记录日志和发送通知即可
+                except Exception as e:
+                    logger.error(f"异步处理飞牛刷新路径时发生错误: {str(e)}")
+                    # 记录异常堆栈信息
+                    import traceback
+                    error_stack = traceback.format_exc()
+                    logger.error(f"  - 异常堆栈: {error_stack}")
+                    
+                    # 格式化异常信息，发送通知
+                    import datetime
+                    error_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    title = f"【飞牛刷新异常】任务 {task_id} 异步处理失败"
+                    content = f"""TaoSync 飞牛刷新路径处理异常通知
+                    
+                    任务ID: {task_id}
+                    作业ID: {job.get('id', '未知')}
+                    失败时间: {error_time}
+                    失败原因: {str(e)}
+                    处理路径数量: {len(paths)}
+
+                    异常堆栈:
+                    {error_stack}
+                    """
+                    
+                    try:
+                        send_notification(title, content, message_type='feiniu_refresh_error')
+                        logger.info("飞牛刷新异常通知发送成功")
+                    except Exception as notify_e:
+                        logger.error(f"发送飞牛刷新异常通知失败: {str(notify_e)}")
+                finally:
+                    logger.info(f"异步处理飞牛刷新路径完成")
+            
+            # 启动异步线程处理飞牛刷新路径，传递必要数据而非持有self引用
+            refresh_thread = threading.Thread(
+                target=async_feiniu_refresh, 
+                args=(refresh_paths, job_data, task_id),
+                name=f'飞牛异步刷新线程{task_id}'
+            )
+            refresh_thread.daemon = True  # 设置为守护线程，确保程序退出时线程自动终止
+            logger = logging.getLogger()
+            refresh_thread.start()
+            logger.info(f"已启动异步线程处理飞牛刷新路径，不影响job任务结束流程")
+        
         self.updateTaskStatus()
         self.jobClient.jobDoing = False
         self.jobClient.currentJobTask = None
@@ -453,6 +777,7 @@ class JobTask:
         """
         srcPath = self.job['srcPath']
         jobExclude = self.job['exclude']
+        includeRegex = self.job['include_regex']
         wantSpec = self.job['possess']
         strmSpec = self.job['strm_nfo']
         strmPath = self.job['strm_path']
@@ -479,7 +804,7 @@ class JobTask:
         for dstItem in dstPathList:
             i += 1
             self.syncWithHave(srcPath, dstItem, spec, wantSpec, strmSpec, strmPath, srcPath, dstItem, i == 1,
-                              ignore_path, strm_create_cover_possess, strm_src_sync_cover_possess)
+                              ignore_path, strm_create_cover_possess, strm_src_sync_cover_possess, includeRegex)
         self.scanFinish = True
 
     def copyFile(self, srcPath, dstPath, fileName, fileSize):
@@ -523,7 +848,7 @@ class JobTask:
             errMsg = str(e)
         self.delHook(path, fileName, None if isPath else size, status, errMsg, isPath, createTime)
 
-    def listDir(self, path, firstDst, spec, wantSpec, strmSpec, rootPath, ignore_path, isSrc=True):
+    def listDir(self, path, firstDst, spec, wantSpec, strmSpec, rootPath, ignore_path, includeRegex, isSrc=True):
         """
         列出目录
         self.job['useCacheT']: 扫描目标目录时，是否使用缓存，0-不使用，1-使用
@@ -542,7 +867,7 @@ class JobTask:
         useCache = 1 if isSrc and not firstDst else self.job[f"useCache{'S' if isSrc else 'T'}"]
         scanInterval = self.job[f"scanInterval{'S' if isSrc else 'T'}"]
         try:
-            return self.alistClient.fileListApi(path, useCache, scanInterval, spec, wantSpec, strmSpec, rootPath, ignore_path)
+            return self.alistClient.fileListApi(path, useCache, scanInterval, spec, wantSpec, strmSpec, rootPath, ignore_path, includeRegex)
         except Exception as e:
             logger = logging.getLogger()
             errMsg = G('scan_error').format(G('src' if isSrc else 'dst'), str(e))
@@ -570,10 +895,10 @@ class JobTask:
         useCache = 1 if isSrc and not firstDst else self.job[f"useCache{'S' if isSrc else 'T'}"]
         scanInterval = self.job[f"scanInterval{'S' if isSrc else 'T'}"]
         try:
-            return self.alistClient.getFileApi(path, useCache, scanInterval, spec, wantSpec, rootPath)
+            return self.alistClient.getFileApi(path, useCache, scanInterval)
         except Exception as e:
             logger = logging.getLogger()
-            errMsg = G('get_file_info_error').format(G('src' if isSrc else 'dst'), str(e))
+            errMsg = f"获取{'源' if isSrc else '目标'}文件信息失败: {str(e)}"
             logger.error(errMsg)
             logger.exception(e)
             self.copyHook(path if isSrc else None, None if isSrc else path, None, None, status=7, errMsg=errMsg,
@@ -654,6 +979,18 @@ class JobTask:
                 f.write(raw_url)
             logger.info(f"文件已成功保存到: {strm_path}")
             logger.info(f"文件大小: {os.path.getsize(strm_path)} 字节")
+            
+            # 保存需要刷新的路径，任务结束后统一处理
+            try:
+                # 获取strm文件所在的目录路径
+                strm_dir = os.path.dirname(strm_path)
+                path = strm_dir.replace('\\', '/')
+                # 将路径添加到集合中，自动去重
+                self.feiniu_refresh_paths.add(path)
+                logger.info(f"保存需要刷新的路径: {strm_dir} -> 处理后: {path}")
+            except Exception as e:
+                logger.error(f"保存刷新路径失败: {strm_dir}, 错误: {str(e)}")
+            
             msg = str(strm_path)
 
         except PermissionError as e:
@@ -696,6 +1033,10 @@ class JobTask:
 
     def is_path_prefix(self, file_path, prefix_list):
         """更安全的路径前缀检查，处理结尾分隔符"""
+        # 处理prefix_list为None或空的情况
+        if not prefix_list:
+            return False
+            
         for prefix in prefix_list:
             if not prefix.endswith("/"):
                 prefix = prefix + "/"
@@ -753,7 +1094,7 @@ class JobTask:
             raise
 
     def syncWithHave(self, srcPath, dstPath, spec, wantSpec, strmSpec, strmPath, srcRootPath, dstRootPath, firstDst,
-                              ignore_path, strm_create_cover_possess, strm_src_sync_cover_possess):
+                              ignore_path, strm_create_cover_possess, strm_src_sync_cover_possess, includeRegex):
         """
         扫描并同步-目标目录存在目录（意味着要继续扫描目标目录）
         :param srcPath: 来源路径，以/结尾
@@ -770,8 +1111,8 @@ class JobTask:
         if self.breakFlag:
             return
         try:
-            srcFiles = self.listDir(srcPath, firstDst, spec, wantSpec, strmSpec, srcRootPath, ignore_path)
-            dstFiles = self.listDir(dstPath, firstDst, spec, wantSpec, strmSpec, dstRootPath, ignore_path, False)
+            srcFiles = self.listDir(srcPath, firstDst, spec, wantSpec, strmSpec, srcRootPath, ignore_path, includeRegex)
+            dstFiles = self.listDir(dstPath, firstDst, spec, wantSpec, strmSpec, dstRootPath, ignore_path, includeRegex, False)
         except Exception:
             # 已在listDir做出日志打印等操作，此处啥都不用做
             return
@@ -837,12 +1178,14 @@ class JobTask:
 
                             if (self.job['strm_create_cover'] == 1 and self.is_path_prefix(srcPath, strm_create_cover_possess)) or strmName not in dstFiles:
                                 logger.info(f'不存在[{srcPath + strmName}]开始创建......')
-                                # fileInfo = self.getFileInfo(srcPath + key, firstDst, spec, wantSpec, srcRootPath)
-                                # raw_url = fileInfo['raw_url']
+                                fileInfo = self.getFileInfo(srcPath + key, firstDst, spec, wantSpec, srcRootPath)
+                                raw_url = fileInfo['raw_url']
                                 self.createFile(strmPath, srcPath, srcRootPath, strmName, raw_url)
                             else:
-                                # if self.job['strm_create_cover'] == 1 and self.is_path_prefix(srcPath, strm_create_cover_possess):
-                                #     self.update_file_if_changed(raw_url, strmPath + strmName)
+                                if self.job['strm_create_cover'] == 1 and self.is_path_prefix(srcPath, strm_create_cover_possess):
+                                    fileInfo = self.getFileInfo(srcPath + key, firstDst, spec, wantSpec, srcRootPath)
+                                    raw_url = fileInfo['raw_url']
+                                    self.update_file_if_changed(raw_url, strmPath + strmName)
                                 logger.info(f'存在strm文件[{srcPath + strmName}]跳过生成......')
                 else:
                     # 目标目录没有这个文件或文件大小不匹配(即需要同步)
@@ -854,19 +1197,19 @@ class JobTask:
                 if key not in dstFiles:
                     self.syncWithOutHave(srcPath + key, dstPath + key, spec, wantSpec, strmSpec, strmPath, srcRootPath,
                                          dstRootPath, firstDst, ignore_path, strm_create_cover_possess,
-                                         strm_src_sync_cover_possess)
+                                         strm_src_sync_cover_possess, includeRegex)
                 # 目标目录有这个目录，继续递归
                 else:
                     self.syncWithHave(srcPath + key, dstPath + key, spec, wantSpec, strmSpec, strmPath, srcRootPath,
                                       dstRootPath, firstDst, ignore_path, strm_create_cover_possess,
-                                      strm_src_sync_cover_possess)
+                                      strm_src_sync_cover_possess, includeRegex)
         if self.job['method'] == 1:
             for dstKey in dstFiles.keys():
                 if dstKey not in srcFiles:
                     self.delFile(dstPath, dstKey, dstFiles[dstKey]['size'])
 
     def syncWithOutHave(self, srcPath, dstPath, spec, wantSpec, strmSpec, strmPath, srcRootPath, dstRootPath, firstDst,
-                        ignore_path, strm_create_cover_possess, strm_src_sync_cover_possess):
+                        ignore_path, strm_create_cover_possess, strm_src_sync_cover_possess, includeRegex):
         """
         扫描并同步-目标目录为空
         :param srcPath: 来源路径，以/结尾
@@ -878,6 +1221,7 @@ class JobTask:
         :param srcRootPath:
         :param dstRootPath:
         :param firstDst:
+        :param includeRegex: 包含的正则表达式
         :return:
         """
         if self.breakFlag:
@@ -894,7 +1238,7 @@ class JobTask:
         if status != 2:
             return
         try:
-            srcFiles = self.listDir(srcPath, firstDst, spec, wantSpec, strmSpec, srcRootPath, ignore_path)
+            srcFiles = self.listDir(srcPath, firstDst, spec, wantSpec, strmSpec, srcRootPath, ignore_path, includeRegex)
         except Exception:
             # 已在listDir做出日志打印等操作，此处啥都不用做
             return
@@ -904,7 +1248,7 @@ class JobTask:
             if key.endswith('/'):
                 self.syncWithOutHave(srcPath + key, dstPath + key, spec, wantSpec, strmSpec, strmPath, srcRootPath,
                                      dstRootPath, firstDst, ignore_path, strm_create_cover_possess,
-                                     strm_src_sync_cover_possess)
+                                     strm_src_sync_cover_possess, includeRegex)
             else:
                 if self.job['method'] == 3:
                     logger = logging.getLogger()
@@ -915,18 +1259,12 @@ class JobTask:
                             # 目标目录没有这个文件或文件大小不匹配(即需要同步)
                             self.copyFile(srcPath, dstPath, key, srcFiles[key]['size'])
 
-                    # fileInfo = self.getFileInfo(srcPath + key, firstDst, spec, wantSpec, srcRootPath)
-                    # raw_url = fileInfo['raw_url']
                     if wantSpec:
                         if re.search(wantSpec, key):
                             strmName = self.smart_extension_replace(key, '.strm')
                             logger.info(f'strm文件名[{srcPath + strmName}]')
-                            strm_url_prefix = self.alistClient.url
-                            if self.job['strm_url_prefix']:
-                                strm_url_prefix = self.job['strm_url_prefix']
-                            raw_url = strm_url_prefix + '/d' + srcPath + key
-                            if srcFiles[key]['sign']:
-                                raw_url = raw_url + '?sign=' + srcFiles[key]['sign']
+                            fileInfo = self.getFileInfo(srcPath + key, firstDst, spec, wantSpec, srcRootPath)
+                            raw_url = fileInfo['raw_url']
                             self.createFile(strmPath, srcPath, srcRootPath, strmName, raw_url)
                 else:
                     self.copyFile(srcPath, dstPath, key, srcFiles[key]['size'])

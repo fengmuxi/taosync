@@ -76,7 +76,14 @@ const routes = [{
 			meta: {
 				letfIndex: '/notify'
 			}
-		}]
+		},{ 
+			path: 'log',
+			component: () => import('@/views/page/notify/log'),
+			name: '消息记录',
+			meta: {
+				letfIndex: '/notify'
+			}
+		}] 
 	},
 	{
 		path: '/setting',
@@ -87,6 +94,18 @@ const routes = [{
 			name: '系统设置',
 			meta: {
 				letfIndex: '/setting'
+			}
+		}]
+	},
+	{
+		path: '/feiniu',
+		component: Layout,
+		children: [{
+			path: '',
+			component: () => import('@/views/page/feiniu/index'),
+			name: '飞牛配置',
+			meta: {
+				letfIndex: '/feiniu'
 			}
 		}]
 	}

@@ -6,13 +6,13 @@ import sys
 from tornado.web import Application, RequestHandler, StaticFileHandler
 
 from common.config import getConfig
-from controller import systemController, jobController, notifyController
+from controller import systemController, jobController, notifyController, feiniuController
 from service.system import onStart
 
 
 class MainIndex(RequestHandler):
     def get(self):
-        self.render(os.path.join(frontendPath, "front/index.html"))
+        self.render(os.path.join(frontendPath, "frontend/dist/index.html"))
 
 
 def make_app():
@@ -25,9 +25,10 @@ def make_app():
         (r"/svr/alist", jobController.Alist),
         (r"/svr/job", jobController.Job),
         (r"/svr/notify", notifyController.Notify),
+        (r"/svr/feiniu.*", feiniuController.FeiNiu),
         (r"/", MainIndex),
         (r"/(.*)", StaticFileHandler,
-         {"path": os.path.join(frontendPath, "front")})
+         {"path": os.path.join(frontendPath, "frontend/dist")})
     ], cookie_secret=server['passwdStr'])
 
 

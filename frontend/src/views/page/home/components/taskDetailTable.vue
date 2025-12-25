@@ -1,6 +1,6 @@
 <template>
 	<div class="taskDetailTable">
-		<el-table :data="taskItemData.dataList" class="table-data" height="calc(100% - 36px)" v-loading="loading"
+		<el-table :data="taskItemData.dataList" class="table-data" v-loading="loading"
 			empty-text="无数据">
 			<el-table-column type="expand">
 				<template slot-scope="props">
@@ -44,7 +44,7 @@
 			</el-table-column>
 			<el-table-column prop="type" label="操作类型" width="90">
 				<template slot-scope="scope">
-					<div :class="`bg-status bg-${scope.row.type ? '3' : '8'}`" style="width: 80px;">
+					<div :class="`bg-status bg-${scope.row.type ? '3' : '8'}`" class="status-bg">
 						{{scope.row.type == 0 ? (scope.row.isPath ? '创建' : '复制') : (scope.row.type == 3 ? 'strm创建' : (scope.row.type == 1 ? '删除' : '移动'))}}
 					</div>
 				</template>
@@ -57,10 +57,10 @@
 						</span>
 						<el-popover v-else placement="top-end" title="错误原因" width="200" trigger="hover"
 							:content="scope.row.errMsg">
-							<span slot="reference">失败，<span style="color: #409eff;">原因</span></span>
+							<span slot="reference">失败，<span class="error-reason">原因</span></span>
 						</el-popover>
 					</div>
-					<el-progress :stroke-width="20" v-else :text-inside="true" style="width: 90px;"
+					<el-progress :stroke-width="20" v-else :text-inside="true" class="progress-bar"
 						color="rgba(64, 158, 255, .8)" text-color="#fff" define-back-color="rgba(64, 158, 255, .3)"
 						:percentage="Number(Number(scope.row.progress).toFixed(3))"></el-progress>
 				</template>
@@ -116,10 +116,31 @@
 
 <style lang="scss" scoped>
 	.taskDetailTable {
+		width: 100%;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		
+		.table-data {
+			flex: 1;
+		}
+		
 		.page {
 			margin-top: 8px;
 			display: flex;
 			justify-content: right;
+		}
+		
+		.error-reason {
+			color: var(--color-primary);
+		}
+		
+		.status-bg {
+			width: 80px;
+		}
+		
+		.progress-bar {
+			width: 90px;
 		}
 	}
 </style>

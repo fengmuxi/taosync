@@ -120,3 +120,31 @@ def getChildPath(alistId, path):
     """
     client = getClientById(alistId)
     return client.filePathList(path)
+
+
+def testConnection(alist):
+    """
+    测试AList连接
+    :param alist: {
+        'url': 'xxx',
+        'token': 'xxx'
+    } 或者 {
+        'id': 1
+    }
+    :return: (bool, str) 连接结果和消息
+    """
+    try:
+        # 检查是否传入了id，如果传入则从数据库获取完整配置
+        if 'id' in alist:
+            alistInfo = getAlistById(alist['id'])
+            url = alistInfo['url'].rstrip('/')
+            token = alistInfo['token']
+        else:
+            # 去掉URL末尾的/，确保格式正确
+            url = alist['url'].rstrip('/')
+            token = alist['token']
+        # 尝试创建客户端实例，这会自动调用getUser()方法来验证连接
+        client = AlistClient(url, token)
+        return True, f"连接成功，用户名：{client.user}"
+    except Exception as e:
+        return False, f"连接失败：{str(e)}"

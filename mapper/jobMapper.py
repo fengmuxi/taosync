@@ -47,15 +47,15 @@ def addJob(job):
     return sqlBase.execute_insert("insert into job (enable, remark, srcPath, dstPath, alistId, useCacheT, "
                                   "scanIntervalT, useCacheS, scanIntervalS, method, interval"
                                   ",isCron, year, month, day, week, day_of_week, hour, minute, second, "
-                                  "start_date, end_date, exclude, possess, strm_nfo, strm_path, strm_url_prefix,"
+                                  "start_date, end_date, exclude, possess, include_regex, strm_nfo, strm_path, strm_url_prefix,"
                                   "strm_src_sync, strm_dst_sync, ignore_path, strm_create_cover, strm_create_cover_possess,"
-                                  "strm_src_sync_cover, strm_src_sync_cover_possess) "
+                                  "strm_src_sync_cover, strm_src_sync_cover_possess, feiniuId, feiniu_library_id, feiniu_media_path, strm_path_mapping) "
                                   "VALUES (:enable, :remark, :srcPath, :dstPath, :alistId, :useCacheT, "
                                   ":scanIntervalT, :useCacheS, :scanIntervalS, :method, :interval, "
                                   ":isCron, :year, :month, :day, :week, :day_of_week, :hour, :minute, :second, "
-                                  ":start_date, :end_date, :exclude, :possess, :strm_nfo, :strm_path, :strm_url_prefix,"
+                                  ":start_date, :end_date, :exclude, :possess, :include_regex, :strm_nfo, :strm_path, :strm_url_prefix,"
                                   ":strm_src_sync, :strm_dst_sync, :ignore_path, :strm_create_cover, :strm_create_cover_possess,"
-                                  ":strm_src_sync_cover, :strm_src_sync_cover_possess)", job)
+                                  ":strm_src_sync_cover, :strm_src_sync_cover_possess, :feiniuId, :feiniu_library_id, :feiniu_media_path, :strm_path_mapping)", job)
 
 
 def updateJob(job):
@@ -64,11 +64,12 @@ def updateJob(job):
                            " useCacheT=:useCacheT, scanIntervalT=:scanIntervalT, useCacheS=:useCacheS, scanIntervalS=:scanIntervalS, "
                            "method=:method, interval=:interval, isCron=:isCron, year=:year, "
                            "month=:month, day=:day, week=:week, day_of_week=:day_of_week, hour=:hour, minute=:minute, "
-                           "second=:second, start_date=:start_date, end_date=:end_date, exclude=:exclude, possess=:possess, "
+                           "second=:second, start_date=:start_date, end_date=:end_date, exclude=:exclude, possess=:possess, include_regex = :include_regex, "
                            "strm_nfo=:strm_nfo, strm_path=:strm_path, strm_url_prefix=:strm_url_prefix, strm_src_sync=:strm_src_sync,"
                            "strm_dst_sync=:strm_dst_sync, ignore_path=:ignore_path, strm_create_cover=:strm_create_cover,"
                            "strm_create_cover_possess=:strm_create_cover_possess, strm_src_sync_cover=:strm_src_sync_cover,"
-                           "strm_src_sync_cover_possess=:strm_src_sync_cover_possess  where id=:id",
+                           "strm_src_sync_cover_possess=:strm_src_sync_cover_possess, feiniuId=:feiniuId, feiniu_library_id=:feiniu_library_id, "
+                           "feiniu_media_path=:feiniu_media_path, strm_path_mapping=:strm_path_mapping  where id=:id",
                            job)
 
 

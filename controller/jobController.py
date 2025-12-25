@@ -24,6 +24,10 @@ class Alist(BaseHandler):
     @run_on_executor
     @handle_request
     def post(self, req):
+        if 'test' in req and req['test']:
+            # 测试连接
+            success, message = alistService.testConnection(req)
+            return {'success': success, 'message': message}
         alistService.addClient(req)
 
     @run_on_executor

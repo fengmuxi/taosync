@@ -245,3 +245,41 @@ export async function blobValidate(data) {
 		return true;
 	}
 }
+
+// 导出CSV文件
+export function exportCsv(data, filename, columns) {
+	// 列标题，逗号分隔
+	let csvContent = columns.map(col => col.title).join(',') + '\n';
+	
+	// 行数据，逗号分隔
+	data.forEach(row => {
+		let rowData = columns.map(col => {
+			let value = row[col.key] || '';
+			// 处理包含逗号、引号或换行符的情况
+			if (typeof value === 'string') {
+				// 如果包含逗号、双引号或换行符，则用双引号包裹
+				if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+					// 替换双引号为两个双引号
+					value = '"' + value.replace(/"/g, '""') + '"';
+				}
+			}
+			return value;
+		}).join(',');
+		csvContent += rowData + '\n';
+	});
+	
+	// 创建Blob对象
+	const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+	
+	// 创建下载链接
+	const link = document.createElement('a');
+	const url = URL.createObjectURL(blob);
+	link.setAttribute('href', url);
+	link.setAttribute('download', `${filename}_${new Date().getTime()}.csv`);
+	link.style.visibility = 'hidden';
+	
+	// 触发下载
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+}

@@ -1,11 +1,15 @@
 <template>
 	<div class="notify">
+		<div class="header-box">
+			<h2>通知配置</h2>
+			<el-button type="primary" @click="goToLog">消息记录</el-button>
+		</div>
 		<div class="loading-box content-none-data" v-loading="true" v-if="loading">加载中</div>
 		<div v-else class="card-box">
 			<div class="card-item" v-for="item in dataList">
 				<div class="card-item-top">
-					<el-image :src="`/notify/${item.method}.png`" fit="contain" style="width: 60px;height: 60px;"></el-image>
-					<div style="margin-left: 12px;">
+					<el-image :src="`/notify/${item.method}.png`" fit="contain" class="card-item-logo"></el-image>
+					<div class="card-item-info">
 						<div class="card-item-user">{{item.method | notifyMethodFilter}}</div>
 						<div :class="`card-item-enable enable-${item.enable == 1 ? 'enable' : 'disable'}`">
 							{{item.enable == 1 ? '已启用' : '已禁用'}}
@@ -23,7 +27,7 @@
 			</div>
 			<div class="card-item card-add" @click="addShow" v-if="!loading">
 				<template v-if="dataList.length == 0">
-					暂无通知配置，请<span style="color: #409eff;">新增</span>
+					暂无通知配置，请<span class="highlight-text">新增</span>
 				</template>
 				<span v-else>新增</span>
 			</div>
@@ -31,32 +35,30 @@
 				width="680px" :before-close="closeShow" :append-to-body="true">
 				<div class="elform-box">
 					<el-form :model="editData" :rules="editRule[editData.method]" ref="addRule" v-if="editShow"
-						label-width="100px">
+						label-width="120px">
 						<el-form-item prop="enable" label="是否启用">
 							<el-switch v-model="editData.enable" :active-value="1" :inactive-value="0">
 							</el-switch>
 						</el-form-item>
 						<el-form-item prop="method" label="方式">
-							<el-select v-model="editData.method" @change="methodChange" style="width: 100%;">
-								<el-option :key="meItem - 1" :value="meItem - 1" :label="meItem - 1 | notifyMethodFilter"
-									v-for="meItem in 3"></el-option>
-								<!-- <el-option :key="1" :value="1" label="server酱"></el-option>
-							<el-option :key="2" :value="2" label="钉钉机器人"></el-option> -->
-							</el-select>
+							<el-select v-model="editData.method" @change="methodChange" class="full-width">
+									<el-option :key="meItem - 1" :value="meItem - 1" :label="meItem - 1 | notifyMethodFilter"
+										v-for="meItem in 4"></el-option>
+								</el-select>
 						</el-form-item>
 						<template v-if="editData.method == 0">
 							<el-form-item prop="params.url" label="请求地址">
 								<el-input v-model="editData.params.url" placeholder="请输入请求地址"></el-input>
 							</el-form-item>
 							<el-form-item prop="params.method" label="请求方法">
-								<el-select v-model="editData.params.method" style="width: 100%;">
+								<el-select v-model="editData.params.method" class="full-width">
 									<el-option key="POST" value="POST" label="POST"></el-option>
 									<el-option key="PUT" value="PUT" label="PUT"></el-option>
 									<el-option key="GET" value="GET" label="GET"></el-option>
 								</el-select>
 							</el-form-item>
 							<el-form-item v-if="editData.params.method != 'GET'" prop="params.contentType" label="请求体类型">
-								<el-select v-model="editData.params.contentType" style="width: 100%;">
+								<el-select v-model="editData.params.contentType" class="full-width">
 									<el-option key="application/json" value="application/json" label="application/json"></el-option>
 									<el-option key="application/x-www-form-urlencoded" value="application/x-www-form-urlencoded"
 										label="application/x-www-form-urlencoded"></el-option>
@@ -66,7 +68,7 @@
 								<el-input v-model="editData.params.titleName" placeholder="请输入标题参数名"></el-input>
 							</el-form-item>
 							<el-form-item prop="params.needContent" label="是否需要内容">
-								<el-select v-model="editData.params.needContent" style="width: 100%;">
+								<el-select v-model="editData.params.needContent" class="full-width">
 									<el-option :key="true" :value="true" label="需要"></el-option>
 									<el-option :key="false" :value="false" label="不需要"></el-option>
 								</el-select>
@@ -89,6 +91,39 @@
 							<el-form-item prop="params.url" label="WebHook">
 								<el-input v-model="editData.params.url"
 									placeholder="https://oapi.dingtalk.com/robot/send?access_token=xxxx"></el-input>
+							</el-form-item>
+							<el-form-item prop="params.isAtAll" label="是否@所有人">
+								<el-select v-model="editData.params.isAtAll" class="full-width">
+									<el-option :key="true" :value="true" label="是"></el-option>
+									<el-option :key="false" :value="false" label="否"></el-option>
+								</el-select>
+							</el-form-item>
+						</template>
+						<template v-else-if="editData.method == 3">
+							<div class="tip-box">邮件通知配置指南：请填写SMTP服务器信息，支持SSL/TLS加密</div>
+							<el-form-item prop="params.smtpHost" label="SMTP服务器">
+								<el-input v-model="editData.params.smtpHost" placeholder="smtp.example.com"></el-input>
+							</el-form-item>
+							<el-form-item prop="params.smtpPort" label="SMTP端口">
+								<el-input v-model="editData.params.smtpPort" placeholder="587"></el-input>
+							</el-form-item>
+							<el-form-item prop="params.smtpSecure" label="是否启用SSL/TLS">
+								<el-select v-model="editData.params.smtpSecure" class="full-width">
+									<el-option :key="true" :value="true" label="是"></el-option>
+									<el-option :key="false" :value="false" label="否"></el-option>
+								</el-select>
+							</el-form-item>
+							<el-form-item prop="params.smtpUser" label="邮箱账号">
+								<el-input v-model="editData.params.smtpUser" placeholder="your-email@example.com"></el-input>
+							</el-form-item>
+							<el-form-item prop="params.smtpPass" label="邮箱密码/授权码">
+								<el-input v-model="editData.params.smtpPass" type="password" placeholder="邮箱密码或授权码"></el-input>
+							</el-form-item>
+							<el-form-item prop="params.from" label="发件人邮箱">
+								<el-input v-model="editData.params.from" placeholder="your-email@example.com"></el-input>
+							</el-form-item>
+							<el-form-item prop="params.to" label="收件人邮箱">
+								<el-input v-model="editData.params.to" placeholder="recipient@example.com"></el-input>
 							</el-form-item>
 						</template>
 						<el-form-item prop="notSendNull" label="忽略无同步">
@@ -130,40 +165,73 @@
 				editFlag: false,
 				editShow: false,
 				editRule: [{
-					params: {
-						url: [{
-							type: 'string',
-							required: true,
-							message: '请输入地址'
-						}],
-						titleName: [{
-							type: 'string',
-							required: true,
-							message: '请输入标题名'
-						}],
-						contentName: [{
-							type: 'string',
-							required: true,
-							message: '请输入内容名'
-						}]
-					}
-				}, {
-					params: {
-						sendKey: [{
-							type: 'string',
-							required: true,
-							message: '请输入sendKey'
-						}]
-					}
-				}, {
-					params: {
-						url: [{
-							type: 'string',
-							required: true,
-							message: '请输入WebHook地址'
-						}]
-					}
-				}]
+						params: {
+							url: [{
+								type: 'string',
+								required: true,
+								message: '请输入地址'
+							}],
+							titleName: [{
+								type: 'string',
+								required: true,
+								message: '请输入标题名'
+							}],
+							contentName: [{
+								type: 'string',
+								required: true,
+								message: '请输入内容名'
+							}]
+						}
+					}, {
+						params: {
+							sendKey: [{
+								type: 'string',
+								required: true,
+								message: '请输入sendKey'
+							}]
+						}
+					}, {
+						params: {
+							url: [{
+								type: 'string',
+								required: true,
+								message: '请输入WebHook地址'
+							}]
+						}
+					}, {
+						params: {
+							smtpHost: [{
+								type: 'string',
+								required: true,
+								message: '请输入SMTP服务器地址'
+							}],
+							smtpPort: [{
+								type: 'number',
+								required: true,
+								message: '请输入SMTP端口'
+							}],
+							smtpUser: [{
+								type: 'string',
+								required: true,
+								message: '请输入SMTP用户名'
+							}],
+							smtpPassword: [{
+								type: 'string',
+								required: true,
+								message: '请输入SMTP密码/授权码'
+							}],
+							fromEmail: [{
+								type: 'string',
+								required: true,
+								message: '请输入发件人邮箱'
+							}],
+							toEmails: [{
+								type: 'string',
+								required: true,
+								message: '请输入收件人邮箱'
+							}]
+						}
+					}]
 			};
 		},
 		created() {
@@ -179,6 +247,10 @@
 				}).catch(err => {
 					this.loading = false;
 				})
+			},
+			// 跳转到消息记录页面
+			goToLog() {
+				this.$router.push('/notify/log');
 			},
 			addShow() {
 				this.editFlag = false;
@@ -203,31 +275,43 @@
 				this.editShow = true;
 			},
 			methodChange(val) {
-				if (val === 0) {
-					this.editData.params = {
-						url: '',
-						method: 'POST',
-						contentType: 'application/json',
-						needContent: true,
-						titleName: 'title',
-						contentName: 'content',
-						notSendNull: false
-					}
-				} else if (val === 1) {
-					this.editData.params = {
-						sendKey: '',
-						notSendNull: false
-					}
-				} else if (val === 2) {
-					this.editData.params = {
-						url: '',
-						notSendNull: false
-					}
-				}
-				this.$nextTick(() => {
-					this.$refs.addRule.clearValidate();
-				})
-			},
+						if (val === 0) {
+							this.editData.params = {
+								url: '',
+								method: 'POST',
+								contentType: 'application/json',
+								needContent: true,
+								titleName: 'title',
+								contentName: 'content',
+								notSendNull: false
+							}
+						} else if (val === 1) {
+							this.editData.params = {
+								sendKey: '',
+								notSendNull: false
+							}
+						} else if (val === 2) {
+							this.editData.params = {
+								url: '',
+								notSendNull: false
+							}
+						} else if (val === 3) {
+							this.editData.params = {
+								smtpHost: '',
+								smtpPort: 465,
+								smtpUser: '',
+								smtpPassword: '',
+								fromEmail: '',
+								toEmails: '',
+								ssl: 1,
+								tls: 0,
+								notSendNull: false
+							}
+						}
+						this.$nextTick(() => {
+							this.$refs.addRule.clearValidate();
+						})
+					},
 			closeShow() {
 				this.editShow = false;
 			},
@@ -332,10 +416,10 @@
 <style lang="scss">
 	.tip-box {
 		margin: 0 0 20px 100px;
-		color: #909bd4;
+		color: var(--text-secondary);
 
 		a {
-			color: #409eff;
+			color: var(--color-primary);
 		}
 
 		a:hover {
@@ -343,10 +427,36 @@
 		}
 	}
 
+	.full-width {
+		width: 100%;
+	}
+
+	.card-item-logo {
+		width: 60px;
+		height: 60px;
+	}
+
+	.card-item-info {
+		margin-left: 12px;
+	}
+
 	.notify {
 		box-sizing: border-box;
 		width: 100%;
 		height: 100%;
+		padding: 16px;
+
+		.header-box {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 16px;
+			
+			h2 {
+				margin: 0;
+				color: var(--text-primary);
+			}
+		}
 
 		.loading-box {
 			box-sizing: border-box;
@@ -362,13 +472,14 @@
 			width: 100%;
 
 			.card-item {
-				background-color: #292b3c;
+				background-color: var(--bg-quaternary);
 				border-radius: 5px;
 				border: 1px solid;
 				border-color: transparent;
 				height: 110px;
 				margin: 8px;
 				padding: 6px;
+				color: var(--text-primary);
 
 				.card-item-top {
 					display: flex;
@@ -408,11 +519,16 @@
 				display: flex;
 				justify-content: center;
 				align-items: center;
+				color: var(--text-primary);
+				
+				.highlight-text {
+					color: var(--color-primary);
+				}
 			}
 
 			.card-item:hover {
 				border-color: #409eff;
-				background-color: #3d415a;
+				background-color: var(--card-hover);
 			}
 
 			.card-add:hover {

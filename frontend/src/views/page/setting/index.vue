@@ -16,11 +16,10 @@
 							v-model="resetForm.oldPasswd"></el-input>
 					</el-form-item>
 					<el-form-item prop="passwd">
-						<el-input placeholder="请输入新密码" show-password v-model="resetForm.passwd"
-							show-password></el-input>
+						<el-input placeholder="请输入新密码" show-password v-model="resetForm.passwd"></el-input>
 					</el-form-item>
 					<el-form-item prop="passwd2">
-						<el-input placeholder="确认新密码" show-password v-model="resetForm.passwd2" show-password
+						<el-input placeholder="确认新密码" show-password v-model="resetForm.passwd2"
 							@keyup.enter.native="resetPasswd"></el-input>
 					</el-form-item>
 				</el-form>
@@ -29,8 +28,8 @@
 		</div>
 		<div class="setting-bottom">
 			<div class="setting-bottom-item">TaoSync 版本：__version_placeholder__</div>
-			<div class="setting-bottom-item"><a href="https://github.com/dr34m-cn/taosync" target="_blank">项目地址（GitHub）</a></div>
-			<div class="setting-bottom-item"><a href="https://github.com/dr34m-cn/taosync/issues" target="_blank">问题反馈（GitHub Issues）</a></div>
+<!--			<div class="setting-bottom-item"><a href="https://github.com/dr34m-cn/taosync" target="_blank">项目地址（GitHub）</a></div>-->
+<!--			<div class="setting-bottom-item"><a href="https://github.com/dr34m-cn/taosync/issues" target="_blank">问题反馈（GitHub Issues）</a></div>-->
 		</div>
 	</div>
 </template>
@@ -110,7 +109,7 @@
 
 		.user-info {
 			padding: 24px 16px;
-			background-color: #292b3c;
+			background-color: var(--bg-quaternary);
 			width: 352px;
 			box-sizing: border-box;
 			border-radius: 3px;
@@ -128,13 +127,17 @@
 					width: 70px;
 					text-align: justify;
 					margin-right: 16px;
-					color: #909bd4;
+					color: var(--text-secondary);
 				}
 
 				.label::after {
 					display: inline-block;
 					width: 100%;
 					content: "";
+				}
+				
+				.value {
+					color: var(--text-primary);
 				}
 			}
 		}
@@ -145,7 +148,7 @@
 				padding: 16px;
 				width: 320px;
 				margin-bottom: 32px;
-				background-color: #292b3c;
+				background-color: var(--bg-quaternary);
 
 				.setting-box-item {
 					width: 320px;
@@ -165,7 +168,7 @@
 						margin-right: 16px;
 						text-align: right;
 						min-width: 80px;
-						color: #909bd4;
+						color: var(--text-secondary);
 					}
 				}
 
@@ -174,11 +177,11 @@
 				}
 
 				.setting-tip {
-					color: #aaa;
+					color: var(--text-tertiary);
 					font-size: 12px;
 
 					.tip-selected {
-						color: #fff;
+						color: var(--text-primary);
 						font-size: 14px;
 						line-height: 20px;
 					}
@@ -201,11 +204,12 @@
 
 			.setting-bottom-item {
 				margin-right: 16px;
-				
+				color: var(--text-primary);
+
 				a {
 					color: #409eff;
 				}
-				
+
 				a:hover {
 					color: #66b1ff;
 				}

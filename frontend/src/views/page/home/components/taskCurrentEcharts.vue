@@ -18,7 +18,8 @@
 		data() {
 			return {
 				chart: null,
-				observer: null
+				observer: null,
+				currentTheme: this.$store.state.vuex_theme // 当前主题
 			};
 		},
 		watch: {
@@ -28,6 +29,14 @@
 						this.initChart();
 					});
 				}
+			},
+			'$store.state.vuex_theme'(newTheme) {
+				// 主题变化时重新初始化图表
+				this.currentTheme = newTheme;
+				this.destroy();
+				this.$nextTick(() => {
+					this.initChart();
+				});
 			}
 		},
 		created() {
@@ -86,44 +95,73 @@
 						value: this.taskCurrent.size[key]
 					})
 				})
+				
+				// 根据主题设置颜色
+				const isDark = this.currentTheme === 'dark';
+				const colors = isDark ? 
+					['rgb(79, 89, 104)', 'rgb(64, 158, 255)', 'rgb(103, 194, 58)', 'rgb(245, 108, 108)', 'rgb(230, 162, 60)'] :
+					['rgb(120, 144, 156)', 'rgb(41, 121, 255)', 'rgb(76, 175, 80)', 'rgb(244, 67, 54)', 'rgb(255, 152, 0)'];
+				
+				// 设置图例文字颜色
+				const legendTextColor = isDark ? '#c0c4cc' : '#606266';
+				
 				// ECharts 配置
 				const option = {
-					color: ['rgb(79, 89, 104)', 'rgb(64, 158, 255)', 'rgb(103, 194, 58)', 'rgb(245, 108, 108)',
-						'rgb(230, 162, 60)'
-					],
+					color: colors,
 					tooltip: {
-						trigger: 'item'
+						trigger: 'item',
+						backgroundColor: isDark ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.9)',
+						textStyle: {
+							color: isDark ? '#c0c4cc' : '#606266'
+						}
 					},
 					legend: {
 						top: '5%',
-						left: 'center'
+						left: 'center',
+						textStyle: {
+							color: legendTextColor
+						}
 					},
 					series: [{
-						name: '文件及目录数量',
-						type: 'pie',
-						radius: ['75%', '90%'],
-						center: ['50%', '86%'],
-						startAngle: 180,
-						endAngle: 360,
-						data: d0
-					}, {
-						name: '文件大小',
-						type: 'pie',
-						radius: [0, '65%'],
-						center: ['50%', '86%'],
-						startAngle: 180,
-						endAngle: 360,
-						label: {
-							position: 'inside'
-						},
-						tooltip: {
-							valueFormatter: (value) => parseSize(value)
-						},
-						data: d1
-					}]
+							name: '文件及目录数量',
+							type: 'pie',
+							radius: ['75%', '90%'],
+							center: ['50%', '86%'],
+							startAngle: 180,
+							endAngle: 360,
+							data: d0,
+							label: {
+								color: legendTextColor
+							},
+							labelLine: {
+								lineStyle: {
+									color: isDark ? 'rgba(192, 196, 204, 0.3)' : 'rgba(96, 98, 102, 0.3)'
+								}
+							}
+						}, {
+							name: '文件大小',
+							type: 'pie',
+							radius: [0, '65%'],
+							center: ['50%', '86%'],
+							startAngle: 180,
+							endAngle: 360,
+							label: {
+								position: 'inside',
+								color: '#fff'
+							},
+							tooltip: {
+								valueFormatter: (value) => parseSize(value),
+								backgroundColor: isDark ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.9)',
+								textStyle: {
+									color: isDark ? '#c0c4cc' : '#606266'
+								}
+							},
+							data: d1
+						}]
 				};
 				if (!this.chart) {
-					this.chart = echarts.init(this.$refs.taskCurrentEcharts, 'dark');
+					// 根据当前主题初始化图表
+					this.chart = echarts.init(this.$refs.taskCurrentEcharts, this.currentTheme);
 				}
 				this.chart.setOption(option);
 			},

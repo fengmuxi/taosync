@@ -1,15 +1,14 @@
 <template>
 	<div class="taskDetail">
 		<div class="top-box">
-			<div style="display: flex; align-items: center;">
-				<el-button type="primary" icon="el-icon-back" @click="goback" size="small"
-					style="margin-right: 12px;">返回</el-button>
+			<div class="top-box-left">
+				<el-button type="primary" icon="el-icon-back" @click="goback" size="small" class="back-button">返回</el-button>
 				<el-select v-model="params.status" placeholder="筛选状态" @change="getTaskItemList" clearable
-					style="margin-right: 12px;width: 160px;">
+					class="status-select">
 					<el-option :label="item" :value="index" v-for="(item, index) in taskItemStatusList"></el-option>
 				</el-select>
 				<el-select v-model="params.type" placeholder="筛选操作类型" @change="getTaskItemList" clearable
-					style="width: 140px;">
+					class="type-select">
 					<el-option label="复制/创建" :value="0"></el-option>
 					<el-option label="删除" :value="1"></el-option>
 					<el-option label="移动" :value="2"></el-option>
@@ -70,7 +69,10 @@
 					jobGetTaskItem(this.params).then(res => {
 						this.loading = false;
 						res.data.dataList.forEach(item => {
+							// 修复进度显示NAN问题
+							item.progress = item.progress || 0;
 							item.progress = parseInt(item.progress);
+							item.progress = isNaN(item.progress) ? 0 : item.progress;
 							item.progress = item.progress < 100 ? item.progress : 100;
 						})
 						this.taskItemData = res.data;
@@ -107,11 +109,29 @@
 			.top-box-title {
 				font-weight: bold;
 			}
+
+			.top-box-left {
+				display: flex;
+				align-items: center;
+			}
+
+			.back-button {
+				margin-right: 12px;
+			}
 		}
 
 		.table-page-box {
 			width: 100%;
 			height: calc(100% - 54px);
+		}
+
+		.status-select {
+			margin-right: 12px;
+			width: 160px;
+		}
+
+		.type-select {
+			width: 140px;
 		}
 	}
 </style>

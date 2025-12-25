@@ -1,6 +1,6 @@
 <template>
 	<div class="menuRefresh">
-		<el-select v-show="needShow > 1" v-model="interval" placeholder="筛选操作类型" @change="refreshTime" style="width: 140px;margin-right: 10px">
+		<el-select v-show="needShow > 1" v-model="interval" placeholder="筛选操作类型" @change="refreshTime" class="refresh-select">
       <el-option v-for="(item,index) in timeList" :label="item.title" :value="item.value"></el-option>
     </el-select>
 		<div class="refreshLabel" v-show="needShow > 2">{{refreshText}}</div>
@@ -114,9 +114,15 @@
 		display: flex;
 		align-items: center;
 
+		.refresh-select {
+			width: 140px;
+			margin-right: 10px;
+		}
+
 		.refreshLabel {
 			font-size: 18px;
 			margin-right: 8px;
+			color: var(--text-primary);
 		}
 
 		.icon-btn {
@@ -126,11 +132,19 @@
 
 		.el-icon-refresh-right {
 			cursor: pointer;
-			color: #1890ff;
+			color: var(--color-primary);
+			transition: all 0.3s ease;
+		}
+
+		.el-icon-refresh-right:hover {
+			color: var(--color-primary);
+			opacity: 0.8;
+			transform: rotate(90deg);
 		}
 
 		.el-icon-loading {
 			cursor: not-allowed;
+			color: var(--color-primary);
 		}
 	}
 </style>

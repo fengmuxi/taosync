@@ -11,7 +11,7 @@ import requests
 from common.LNG import G
 
 
-def checkExs(path, rts, spec, wantSpec, strmSpec, ignore_path):
+def checkExs(path, rts, spec, wantSpec, strmSpec, ignore_path, includeRegex):
     """
     检查并排除排除项
     :param path: 所在路径
@@ -28,23 +28,33 @@ def checkExs(path, rts, spec, wantSpec, strmSpec, ignore_path):
     rtsNew = rts.copy()
     for rtsItem in rts.keys():
         spec_del = True
+        include_regex_del = True
         ignore_path_del = True
         want_spec_del = True
         strm_spec_del = True
         strm_del = True
         file_del = True
-        # 匹配不扫描文件存在不保留
+        # ignore匹配扫描文件
         if spec:
             if not spec.match_file(path + rtsItem):
                 spec_del = False
         else:
             spec_del = False
 
+        # 排除指定路径
         if ignore_path:
             ignore_path_del = is_path_prefix(path + rtsItem, ignore_path)
         else:
             ignore_path_del = False
 
+        # 正则匹配文件全路径
+        if includeRegex:
+            if includeRegex.match(path + rtsItem):
+                exclude_regex_del = False
+        else:
+            exclude_regex_del = False
+
+        # 正则匹配文件后缀
         if not rtsItem.endswith("/"):
             # 匹配需要生成strm文件存在保留
             if wantSpec:
@@ -60,7 +70,7 @@ def checkExs(path, rts, spec, wantSpec, strmSpec, ignore_path):
         else:
             file_del = False
         # 判断删除内容
-        if spec_del or ignore_path_del or (want_spec_del and strm_spec_del and strm_del and file_del):
+        if spec_del or ignore_path_del or includeRegex or (want_spec_del and strm_spec_del and strm_del and file_del):
             del rtsNew[rtsItem]
     return rtsNew
 
@@ -187,7 +197,7 @@ class AlistClient:
                     return
             self.waits[pathFirst] = time.time()
 
-    def fileListApi(self, path, useCache=0, scanInterval=0, spec=None, wantSpec=None, strmSpec=None, rootPath=None, ignore_path=None):
+    def fileListApi(self, path, useCache=0, scanInterval=0, spec=None, wantSpec=None, strmSpec=None, rootPath=None, ignore_path=None, includeRegex=None):
         """
         目录列表
         :param path: 目录，以/开头并以/结尾
@@ -217,7 +227,7 @@ class AlistClient:
         if (spec or wantSpec) and rts:
             if rootPath is None:
                 rootPath = path
-            rts = checkExs(path[len(rootPath):], rts, spec, wantSpec, strmSpec, ignore_path)
+            rts = checkExs(path[len(rootPath):], rts, spec, wantSpec, strmSpec, ignore_path, includeRegex)
         return rts
 
     def filePathList(self, path):

@@ -73,7 +73,12 @@ def fetchall_to_page(sql, params=None):
         sql_end += ' limit :pageSize offset :offset'
         params['offset'] = (int(pageNum) - 1) * int(pageSize)
     dataList = fetchall_to_table(sql + sql_end, params)
-    count = fetch_first_val(sql.replace('*', 'count(id)'), params)
+    
+    # 优化计数查询：使用更安全的方式获取计数
+    # 构建计数查询SQL，确保只计数主表的记录
+    count_sql = "SELECT COUNT(*) FROM (" + sql + ") AS subquery"
+    count = fetch_first_val(count_sql, params)
+    
     return {
         'dataList': dataList,
         'count': count

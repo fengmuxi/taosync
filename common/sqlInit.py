@@ -4,7 +4,7 @@ from common import sqlBase
 
 @sqlBase.connect_sql
 def init_sql(conn):
-    cuVersion = 250625
+    cuVersion = 251219  # 更新版本号，添加飞牛刷新任务表
     cursor = conn.cursor()
     cursor.execute("SELECT name FROM sqlite_master WHERE name='user_list'")
     passwd = None
@@ -53,6 +53,7 @@ def init_sql(conn):
                        "end_date text DEFAULT NULL,"        # 结束时间
                        "exclude text DEFAULT NULL,"         # 排除无需同步项，类似gitignore语法，英文冒号分隔多个规则
                        "ignore_path text DEFAULT NULL,"     # 排除无需同步项路径前缀，英文冒号分隔多个规则
+                       "include_regex text DEFAULT NULL,"   # 匹配同步文件夹的全路径正则表达式
                        "possess text DEFAULT NULL,"         # 文件匹配正则
                        "strm_nfo text DEFAULT NULL,"        # 筛选strm刮削文件同步项，文件匹配正则
                        "strm_path text DEFAULT NULL,"       # strm文件保存路径
@@ -63,6 +64,9 @@ def init_sql(conn):
                        "strm_src_sync_cover integer DEFAULT 0,"   # 生成strm文件时同步目录，是否允许刮削文件同步至源目录并覆盖，0-不使用，1-使用
                        "strm_src_sync_cover_possess text DEFAULT NULL," # 生成strm文件时同步目录，允许刮削文件同步至源目录并覆盖路径匹配项，留空则全匹配
                        "strm_dst_sync integer DEFAULT 0,"   # 生成strm文件时同步目录，是否允许删除目标目录多余strm文件，0-不使用，1-使用
+                       "feiniuId integer DEFAULT NULL,"      # 飞牛配置ID
+                       "feiniu_library_id text DEFAULT NULL," # 飞牛媒体库ID
+                       "feiniu_media_path text DEFAULT NULL," # 飞牛媒体库路径映射
                        "createTime integer DEFAULT (strftime('%s', 'now')),"
                        " unique (srcPath, dstPath, alistId))")
         cursor.execute("create table job_task("
@@ -91,13 +95,60 @@ def init_sql(conn):
                        "errMsg text,"               # 失败原因
                        "createTime integer DEFAULT (strftime('%s', 'now'))"
                        ")")
-        cursor.execute("create table notify("
-                       "id integer primary key autoincrement,"
+        cursor.execute("create table notify( "
+                       "id integer primary key autoincrement, "
                        "enable integer DEFAULT 1,"  # 启用，1-启用，0-停用
                        "method integer,"            # 方式：0-自定义；1-server酱；2-钉钉；待扩展更多
                        "params text,"               # 以json字符串存储参数
                        "createTime integer DEFAULT (strftime('%s', 'now'))"
                        ")")
+        cursor.execute("create table feiniu_list( "
+                       "id integer primary key autoincrement, "
+                       "host text,"                  # 飞牛影视服务地址
+                       "username text,"              # 用户名
+                       "password text,"              # 密码
+                       "library_id text,"            # 媒体库ID
+                       "enable integer DEFAULT 1,"   # 是否启用，1-启用，0-停用
+                       "remark text,"                # 备注
+                       "createTime integer DEFAULT (strftime('%s', 'now'))"
+                       ")")
+        # 创建飞牛刷新任务表
+        cursor.execute("create table feiniu_refresh_task(" 
+                       "id integer primary key autoincrement," 
+                       "feiniuId integer,"            # 飞牛配置ID
+                       "jobId integer,"               # 关联的作业ID
+                       "media_library_id text,"       # 媒体库ID
+                       "folder_paths text,"           # 刷新路径列表（JSON格式）
+                       "operation_type text,"         # 操作类型（refresh）
+                       "status integer DEFAULT 0,"    # 状态（0-执行中，1-成功，2-失败）
+                       "start_time integer,"          # 开始时间戳
+                       "end_time integer,"            # 结束时间戳
+                       "elapsed_time real,"           # 耗时（秒）
+                       "error_msg text,"              # 错误信息
+                       "retry_count integer DEFAULT 0" # 重试次数
+                       ")")
+        # 创建消息记录表
+        cursor.execute('''
+            CREATE TABLE notify_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            notify_id INTEGER NOT NULL,
+            user_id INTEGER DEFAULT 0,
+            message_type TEXT DEFAULT '',
+            title TEXT NOT NULL,
+            content TEXT NOT NULL,
+            send_time INTEGER NOT NULL,
+            status INTEGER NOT NULL DEFAULT 0, -- 0: 失败, 1: 成功
+            message TEXT DEFAULT '',
+            device_info TEXT DEFAULT '',
+            create_time INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+        )
+        ''')
+        # 创建消息记录表索引
+        cursor.execute('CREATE INDEX idx_notify_log_notify_id ON notify_log(notify_id)')
+        cursor.execute('CREATE INDEX idx_notify_log_user_id ON notify_log(user_id)')
+        cursor.execute('CREATE INDEX idx_notify_log_send_time ON notify_log(send_time)')
+        cursor.execute('CREATE INDEX idx_notify_log_status ON notify_log(status)')
+        cursor.execute('CREATE INDEX idx_notify_log_message_type ON notify_log(message_type)')
         conn.commit()
     else:
         try:
@@ -162,6 +213,66 @@ def init_sql(conn):
                 cursor.execute("alter table job add column strm_create_cover_possess text DEFAULT NULL")
                 cursor.execute("alter table job add column strm_src_sync_cover integer DEFAULT 0")
                 cursor.execute("alter table job add column strm_src_sync_cover_possess text DEFAULT NULL")
+            if sqlVersion < 251201:
+                cursor.execute("alter table job add column include_regex text DEFAULT NULL")
+            if sqlVersion < 251202:
+                cursor.execute("create table feiniu_list( "
+                               "id integer primary key autoincrement, "
+                               "host text,"                  # 飞牛影视服务地址
+                               "username text,"              # 用户名
+                               "password text,"              # 密码
+                               "library_id text,"            # 媒体库ID
+                               "enable integer DEFAULT 1,"   # 是否启用，1-启用，0-停用
+                               "remark text,"                # 备注
+                               "createTime integer DEFAULT (strftime('%s', 'now'))"
+                               ")")
+            if sqlVersion < 251212:
+                # 添加飞牛配置相关字段到job表
+                cursor.execute("alter table job add column feiniuId integer DEFAULT NULL")
+                cursor.execute("alter table job add column feiniu_library_id text DEFAULT NULL")
+                cursor.execute("alter table job add column feiniu_media_path text DEFAULT NULL")
+            if sqlVersion < 251213:
+                # 添加统一路径映射字段
+                cursor.execute("alter table job add column strm_path_mapping text DEFAULT NULL")
+            if sqlVersion < 251216:
+                # 创建消息记录表
+                cursor.execute('''
+                CREATE TABLE IF NOT EXISTS notify_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    notify_id INTEGER NOT NULL,
+                    user_id INTEGER DEFAULT 0,
+                    message_type TEXT DEFAULT '',
+                    title TEXT NOT NULL,
+                    content TEXT NOT NULL,
+                    send_time INTEGER NOT NULL,
+                    status INTEGER NOT NULL DEFAULT 0, -- 0: 失败, 1: 成功
+                    message TEXT DEFAULT '',
+                    device_info TEXT DEFAULT '',
+                    create_time INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+                )
+                ''')
+                # 创建消息记录表索引
+                cursor.execute('CREATE INDEX IF NOT EXISTS idx_notify_log_notify_id ON notify_log(notify_id)')
+                cursor.execute('CREATE INDEX IF NOT EXISTS idx_notify_log_user_id ON notify_log(user_id)')
+                cursor.execute('CREATE INDEX IF NOT EXISTS idx_notify_log_send_time ON notify_log(send_time)')
+                cursor.execute('CREATE INDEX IF NOT EXISTS idx_notify_log_status ON notify_log(status)')
+                cursor.execute('CREATE INDEX IF NOT EXISTS idx_notify_log_message_type ON notify_log(message_type)')
+            if sqlVersion < 251219:
+                # 创建飞牛刷新任务表
+                cursor.execute("create table feiniu_refresh_task( "
+                               "id integer primary key autoincrement, "
+                               "feiniuId integer,"            # 飞牛配置ID
+                               "jobId integer,"               # 关联的作业ID
+                               "media_library_id text,"       # 媒体库ID
+                               "folder_paths text,"           # 刷新路径列表（JSON格式）
+                               "operation_type text,"         # 操作类型（refresh）
+                               "status integer DEFAULT 0,"    # 状态（0-执行中，1-成功，2-失败）
+                               "start_time integer,"          # 开始时间戳
+                               "end_time integer,"            # 结束时间戳
+                               "elapsed_time real,"           # 耗时（秒）
+                               "error_msg text,"              # 错误信息
+                               "retry_count integer DEFAULT 0" # 重试次数
+                               ")")
             cursor.execute(f"update user_list set sqlVersion={cuVersion}")
             conn.commit()
     cursor.close()

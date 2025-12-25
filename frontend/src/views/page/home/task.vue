@@ -1,13 +1,13 @@
 <template>
-	<div class="task" :style="`min-height: calc(320px + ${currentHeight}px)`">
+	<div class="task" :style="`--current-height: ${currentHeight}px`" :class="{'dynamic-height': currentHeight > 0}">
 		<div class="top-box">
 			<el-button type="primary" icon="el-icon-back" size="small" @click="goback">返回</el-button>
 			<div class="top-box-title">作业详情</div>
 			<menuRefresh :loading="loading" :autoRefresh="false" :needShow="1" @getData="getTaskList"></menuRefresh>
 		</div>
-		<taskCurrent @currentChange="currentChange" class="task-current" :style="`height: ${currentHeight}px;`"
+		<taskCurrent @currentChange="currentChange" class="task-current" :class="{'dynamic-height': currentHeight > 0}"
 			:jobId="params.id"></taskCurrent>
-		<div class="table-box" :style="`height: calc(100% - 117px - ${currentHeight}px);`">
+		<div class="table-box" :class="{'dynamic-height': currentHeight > 0}">
 			<el-table :data="taskData.dataList" height="100%" class="table-data" v-loading="loading" empty-text="暂无任务">
 				<el-table-column type="index" label="序号" align="center" width="60"></el-table-column>
 				<el-table-column prop="status" label="状态" width="110">
@@ -25,7 +25,7 @@
 								</span>
 								<el-popover v-else placement="top-end" title="错误原因" width="200" trigger="hover"
 									:content="scope.row.errMsg">
-									<span slot="reference">失败，<span style="color: #409eff;">原因</span></span>
+									<span slot="reference">失败，<span class="error-reason">原因</span></span>
 								</el-popover>
 							</template>
 						</div>
@@ -34,7 +34,7 @@
 				<el-table-column prop="successNum" label="任务进度（意义见页面底部图例，单位个）">
 					<template slot-scope="scope">
 						<span v-if="scope.row.status == 1">同步中的任务进度见👆</span>
-						<div style="display: flex;align-items: center;flex-wrap: wrap;" v-else>
+						<div class="progress-container" v-else>
 							<span class="prgNum bg-8">{{scope.row.allNum}}</span>
 							<span class="prgNum bg-2">{{scope.row.successNum}}</span>
 							<span class="prgNum bg-7">{{scope.row.failNum}}</span>
@@ -60,7 +60,7 @@
 		</div>
 		<div class="page">
 			<div class="page-tip">
-				<span style="margin-right: 12px;">进度图例：</span>
+				<span class="page-tip-label">进度图例：</span>
 				<span class="prgNum bg-8">需同步文件和目录总数</span>
 				<span class="prgNum bg-2">成功</span>
 				<span class="prgNum bg-7">失败</span>
@@ -90,9 +90,9 @@
 		data() {
 			return {
 				taskData: {
-					dataList: [],
-					conut: 0
-				},
+				dataList: [],
+				count: 0
+			},
 				params: {
 					id: null,
 					pageSize: 10,
@@ -175,6 +175,10 @@
 		padding: 16px;
 		box-sizing: border-box;
 
+		&.dynamic-height {
+			min-height: calc(320px + var(--current-height, 0px));
+		}
+
 		.top-box {
 			display: flex;
 			align-items: center;
@@ -183,36 +187,63 @@
 
 			.top-box-title {
 				font-weight: bold;
+				color: var(--text-primary);
 			}
 		}
 
 		.task-current {
-			transition: height 0.5s ease;
+		transition: height 0.5s ease;
+		overflow: hidden;
+		height: 0;
+
+		&.dynamic-height {
+			height: var(--current-height, 0px);
 		}
+	}
 
 		.table-box {
 			transition: height 0.5s ease;
+			height: calc(100% - 117px);
+
+			&.dynamic-height {
+				height: calc(100% - 117px - var(--current-height, 0px));
+			}
 		}
 
-		.prgNum {
-			font-size: 14px;
-			padding: 1px 3px;
-			text-align: center;
-			font-weight: bold;
-			margin: 1px 3px;
-			min-width: 56px;
-			border-radius: 3px;
-		}
-
-		.prgNum:last-child {
-			margin-right: 0;
-		}
-
-		.page {
-			margin-top: 24px;
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-		}
+	.prgNum {
+		font-size: 14px;
+		padding: 1px 3px;
+		text-align: center;
+		font-weight: bold;
+		margin: 1px 3px;
+		min-width: 56px;
+		border-radius: 3px;
+		color: var(--text-primary);
 	}
+
+	.prgNum:last-child {
+		margin-right: 0;
+	}
+
+	.page {
+		margin-top: 24px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.error-reason {
+		color: var(--color-primary);
+	}
+
+	.progress-container {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+	}
+
+	.page-tip-label {
+		margin-right: 12px;
+	}
+}
 </style>

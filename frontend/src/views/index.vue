@@ -51,7 +51,7 @@
 
 <style>
 	.index-home-main {
-		background-color: #191b2b;
+		background-color: var(--bg-primary);
 		position: absolute;
 		top: 0;
 		bottom: 0;
