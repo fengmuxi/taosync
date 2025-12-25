@@ -12,7 +12,7 @@ from service.system import onStart
 
 class MainIndex(RequestHandler):
     def get(self):
-        self.render(os.path.join(frontendPath, "frontend/dist/index.html"))
+        self.render(os.path.join(frontendPath, "front/index.html"))
 
 
 def make_app():
@@ -28,7 +28,7 @@ def make_app():
         (r"/svr/feiniu.*", feiniuController.FeiNiu),
         (r"/", MainIndex),
         (r"/(.*)", StaticFileHandler,
-         {"path": os.path.join(frontendPath, "frontend/dist")})
+         {"path": os.path.join(frontendPath, "front")})
     ], cookie_secret=server['passwdStr'])
 
 
