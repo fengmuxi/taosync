@@ -213,9 +213,8 @@ export default {
     },
     testConnection() {
       // 验证表单中的必填字段
-      const validateFields = this.editFlag ? ['host', 'username'] : ['host', 'username', 'password'];
-      this.$refs.addRule.validateField(validateFields, (valid) => {
-        if (!valid) {
+      this.$refs.addRule.validate((valid) => {
+        if (valid) {
           this.testLoading = true;
           // 调用API测试连通性
           const testData = {
@@ -225,7 +224,7 @@ export default {
             test: true
           };
           // 调用飞牛配置的POST接口测试连接
-        testData.host = testData.host.replace(/\/$/, ''); // 去掉末尾的/，确保格式正确
+          testData.host = testData.host.replace(/\/$/, ''); // 去掉末尾的/，确保格式正确
           // 直接调用request，不使用postAddFeiniu，因为postAddFeiniu会将数据包装在feiniu对象中
           request({
             url: '/feiniu',
@@ -247,15 +246,15 @@ export default {
                 type: 'error'
               });
             }
-        }).catch(err => {
-          this.testLoading = false;
-          this.$message({
-            message: '测试连接失败：' + (err.message || '未知错误'),
-            type: 'error'
+          }).catch(err => {
+            this.testLoading = false;
+            this.$message({
+              message: '测试连接失败：' + (err.message || '未知错误'),
+              type: 'error'
+            });
           });
-        });
-      }
-    });
+        }
+      });
     },
     testConnectionOnItem(item) {
       // 调用API测试连接

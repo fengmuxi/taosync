@@ -107,7 +107,6 @@ def init_sql(conn):
                        "host text,"                  # 飞牛影视服务地址
                        "username text,"              # 用户名
                        "password text,"              # 密码
-                       "library_id text,"            # 媒体库ID
                        "enable integer DEFAULT 1,"   # 是否启用，1-启用，0-停用
                        "remark text,"                # 备注
                        "createTime integer DEFAULT (strftime('%s', 'now'))"
@@ -221,7 +220,6 @@ def init_sql(conn):
                                "host text,"                  # 飞牛影视服务地址
                                "username text,"              # 用户名
                                "password text,"              # 密码
-                               "library_id text,"            # 媒体库ID
                                "enable integer DEFAULT 1,"   # 是否启用，1-启用，0-停用
                                "remark text,"                # 备注
                                "createTime integer DEFAULT (strftime('%s', 'now'))"

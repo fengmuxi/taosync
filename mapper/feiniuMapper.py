@@ -26,13 +26,13 @@ def getEnabledFeiniu():
 
 
 def addFeiniu(feiniu):
-    return sqlBase.execute_insert("insert into feiniu_list (remark, host, userName, password, library_id, enable) "
-                                  "values (:remark, :host, :userName, :password, :library_id, :enable)", feiniu)
+    return sqlBase.execute_insert("insert into feiniu_list (remark, host, username, password, enable) "
+                                  "values (:remark, :host, :username, :password, :enable)", feiniu)
 
 
 def updateFeiniu(feiniu):
     # 动态构建更新语句，只在有密码字段时才更新密码
-    base_fields = ['remark', 'host', 'userName', 'library_id', 'enable']
+    base_fields = ['remark', 'host', 'username', 'enable']
     update_fields = []
     params = {}
     

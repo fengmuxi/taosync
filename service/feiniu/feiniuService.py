@@ -106,7 +106,6 @@ def updateClient(feiniu):
         raise Exception(G('feiniu_config_test_fail').format(str(e)))
     
     # 更新配置
-    # 更新配置
     update_feiniu_data = {
         'id': feiniu['id'],
         'remark': feiniu.get('remark'),

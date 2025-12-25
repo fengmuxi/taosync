@@ -1,13 +1,13 @@
 // 主题变量定义 - 已移除默认配色
 // 系统将根据.light或.dark类来应用不同的主题配色
-:root {  
+// :root {  
   // 公共变量 - 仅保留非主题相关变量
   // --color-primary: #D4AF37;
   // --color-success: #67C23A;
   // --color-warning: #E6A23C;
   // --color-danger: #F56C6C;
   // --color-info: #909399;
-}
+// }
 
 // 全局容器样式修复
 body, html {
@@ -57,6 +57,10 @@ body, html {
   
   // 主色调 - 金色
   --color-primary: #D4AF37;
+  --color-success: #67C23A;
+  --color-warning: #E6A23C;
+  --color-danger: #F56C6C;
+  --color-info: #909399;
   
   // 开关样式 - 金色激活状态，深灰色非激活状态
   --switch-bg: #3A3A3A;
@@ -156,8 +160,12 @@ body, html {
   --pagination-default-active-text: #e6f7ff;
   --pagination-default-active-border: #e6f7ff;
 
-  // 主色调 - 金色
+  // 主色调 - 蓝色
   --color-primary: #409EFF;
+  --color-success: #67C23A;
+  --color-warning: #E6A23C;
+  --color-danger: #F56C6C;
+  --color-info: #909399;
   
   // 按钮颜色变量 - 浅色模式
   --btn-primary-bg: #409EFF;
