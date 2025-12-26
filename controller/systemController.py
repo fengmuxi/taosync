@@ -100,3 +100,18 @@ class Log(BaseHandler):
 
         except Exception as e:
             return f"错误: 无法读取文件 - {str(e)}"
+
+
+class Version(BaseHandler):
+    @handle_request
+    def get(self, req):
+        """
+        获取系统版本号
+        """
+        try:
+            with open('version.txt', 'r', encoding='utf-8') as f:
+                version_line = f.readline().strip()
+                version = version_line.split(',')[0]
+                return version
+        except Exception as e:
+            return f"错误: 无法读取版本文件 - {str(e)}"

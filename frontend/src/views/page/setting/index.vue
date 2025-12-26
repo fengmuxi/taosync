@@ -27,7 +27,7 @@
 			</template>
 		</div>
 		<div class="setting-bottom">
-			<div class="setting-bottom-item">TaoSync 版本：__version_placeholder__</div>
+			<div class="setting-bottom-item">TaoSync 版本：{{ version }}</div>
 <!--			<div class="setting-bottom-item"><a href="https://github.com/dr34m-cn/taosync" target="_blank">项目地址（GitHub）</a></div>-->
 <!--			<div class="setting-bottom-item"><a href="https://github.com/dr34m-cn/taosync/issues" target="_blank">问题反馈（GitHub Issues）</a></div>-->
 		</div>
@@ -36,7 +36,8 @@
 
 <script>
 	import {
-		editPwd
+		editPwd,
+		getVersion
 	} from "@/api/user";
 	export default {
 		name: 'User',
@@ -51,6 +52,7 @@
 				}
 			};
 			return {
+				version: '',
 				resetForm: {
 					oldPasswd: null,
 					passwd: null,
@@ -75,8 +77,21 @@
 				}
 			};
 		},
-		created() {},
+		created() {
+			// 获取版本号
+			this.getVersion();
+		},
 		methods: {
+			// 获取版本号
+			getVersion() {
+				getVersion().then(res => {
+					if (res.code == 200) {
+						this.version = res.data;
+					}
+				}).catch(err => {
+					console.error('获取版本号失败:', err);
+				});
+			},
 			resetPasswd() {
 				this.$refs.resetForm.validate((valid) => {
 					if (valid) {

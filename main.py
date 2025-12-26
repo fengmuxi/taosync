@@ -22,6 +22,7 @@ def make_app():
         (r"/svr/user", systemController.User),
         (r"/svr/language", systemController.Language),
         (r"/svr/log", systemController.Log),
+        (r"/svr/version", systemController.Version),
         (r"/svr/alist", jobController.Alist),
         (r"/svr/job", jobController.Job),
         (r"/svr/notify", notifyController.Notify),
@@ -41,10 +42,31 @@ async def main():
     await asyncio.Event().wait()
 
 
+def get_version():
+    """
+    从version.txt文件中获取版本号
+    """
+    try:
+        with open('version.txt', 'r', encoding='utf-8') as f:
+            version_line = f.readline().strip()
+            # 只取第一个版本号，忽略,latest等后续内容
+            version = version_line.split(',')[0]
+            return version
+    except Exception as e:
+        logging.error(f"读取版本号失败: {e}")
+        return "unknown"
+
+
 if __name__ == "__main__":
+    # 获取版本号
+    version = get_version()
+    
     onStart.init()
     cfg = getConfig()
     frontendPath = sys._MEIPASS if getattr(sys, 'frozen', False) else '.'
     # 后端配置
     server = cfg['server']
+    
+    # 显示启动信息和版本号
+    logging.critical(f"TaoSync 版本: {version}")
     asyncio.run(main())

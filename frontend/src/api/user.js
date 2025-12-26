@@ -51,3 +51,11 @@ export function editPwd(data) {
 		data
 	})
 }
+
+// 获取系统版本号
+export function getVersion() {
+	return request({
+		url: '/version',
+		method: 'get'
+	})
+}
