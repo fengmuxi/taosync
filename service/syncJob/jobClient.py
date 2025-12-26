@@ -1178,13 +1178,9 @@ class JobTask:
 
                             if (self.job['strm_create_cover'] == 1 and self.is_path_prefix(srcPath, strm_create_cover_possess)) or strmName not in dstFiles:
                                 logger.info(f'不存在[{srcPath + strmName}]开始创建......')
-                                fileInfo = self.getFileInfo(srcPath + key, firstDst, spec, wantSpec, srcRootPath)
-                                raw_url = fileInfo['raw_url']
                                 self.createFile(strmPath, srcPath, srcRootPath, strmName, raw_url)
                             else:
                                 if self.job['strm_create_cover'] == 1 and self.is_path_prefix(srcPath, strm_create_cover_possess):
-                                    fileInfo = self.getFileInfo(srcPath + key, firstDst, spec, wantSpec, srcRootPath)
-                                    raw_url = fileInfo['raw_url']
                                     self.update_file_if_changed(raw_url, strmPath + strmName)
                                 logger.info(f'存在strm文件[{srcPath + strmName}]跳过生成......')
                 else:
@@ -1263,8 +1259,12 @@ class JobTask:
                         if re.search(wantSpec, key):
                             strmName = self.smart_extension_replace(key, '.strm')
                             logger.info(f'strm文件名[{srcPath + strmName}]')
-                            fileInfo = self.getFileInfo(srcPath + key, firstDst, spec, wantSpec, srcRootPath)
-                            raw_url = fileInfo['raw_url']
+                            strm_url_prefix = self.alistClient.url
+                            if self.job['strm_url_prefix']:
+                                strm_url_prefix = self.job['strm_url_prefix']
+                            raw_url = strm_url_prefix + '/d' + srcPath + key
+                            if srcFiles[key]['sign']:
+                                raw_url = raw_url + '?sign=' + srcFiles[key]['sign']
                             self.createFile(strmPath, srcPath, srcRootPath, strmName, raw_url)
                 else:
                     self.copyFile(srcPath, dstPath, key, srcFiles[key]['size'])
