@@ -109,9 +109,16 @@ class Version(BaseHandler):
         获取系统版本号
         """
         try:
-            with open('version.txt', 'r', encoding='utf-8') as f:
+            # 获取正确的文件路径，支持pyinstaller打包
+            import sys
+            import os
+            version_file_path = 'version.txt'
+            if getattr(sys, 'frozen', False):
+                # 如果是打包后的可执行文件，使用sys._MEIPASS获取资源文件路径
+                version_file_path = os.path.join(sys._MEIPASS, 'version.txt')
+            with open(version_file_path, 'r', encoding='utf-8') as f:
                 version_line = f.readline().strip()
                 version = version_line.split(',')[0]
                 return version
         except Exception as e:
-            return f"错误: 无法读取版本文件 - {str(e)}"
+            return "unknown"
