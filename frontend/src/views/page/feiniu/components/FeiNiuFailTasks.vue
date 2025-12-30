@@ -91,8 +91,8 @@
         style="width: 100%"
         v-loading="failTasksLoading"
         @selection-change="handleSelectionChange"
-      >
-        <el-table-column type="selection" width="55" />
+        :max-height="tableMaxHeight"
+      >  <el-table-column type="selection" width="55" />
         <el-table-column prop="id" label="任务ID" width="100" />
         <el-table-column prop="media_library_id" label="媒体库ID" width="150" />
         <el-table-column prop="folder_paths" label="刷新路径" width="300">
@@ -209,6 +209,8 @@ export default {
       failTaskCount: 0,
       batchLoading: false,
       selectedTasks: [],
+      // 表格相关数据
+      tableMaxHeight: '330px', // 表格最大高度
       // 自动刷新相关数据
       autoRefreshEnabled: false,
       refreshInterval: 10, // 默认10秒刷新一次
@@ -236,10 +238,6 @@ export default {
   created() {
     this.getFailTaskCount();
   },
-  // 组件销毁前清理定时器
-  beforeDestroy() {
-    this.stopAutoRefresh();
-  },
   // 组件激活时恢复定时器（如果启用了自动刷新）
   activated() {
     if (this.autoRefreshEnabled) {
@@ -248,6 +246,10 @@ export default {
   },
   // 组件停用时暂停定时器（如果启用了自动刷新）
   deactivated() {
+    this.stopAutoRefresh();
+  },
+  // 组件销毁前清理定时器
+  beforeDestroy() {
     this.stopAutoRefresh();
   },
   watch: {
@@ -511,7 +513,7 @@ export default {
     min-height: 500px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     position: relative;
-    overflow: hidden;
+    overflow: auto;
 
     &::before {
       content: '';
@@ -767,7 +769,6 @@ export default {
   .el-table {
     background-color: var(--bg-quaternary);
     border-radius: 12px;
-    overflow: hidden;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     border: 1px solid var(--border-color);
 
@@ -842,6 +843,12 @@ export default {
 
     ::v-deep .el-table__expand-icon {
       color: var(--color-primary);
+    }
+
+    // 适配暗色主题的右侧固定列补丁
+    ::v-deep .el-table__fixed-right-patch {
+      background-color: var(--bg-quaternary) !important;
+      border-color: var(--border-color) !important;
     }
 
     ::v-deep .el-button {

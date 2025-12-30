@@ -584,7 +584,7 @@
 								</div>
 							</div>
 						</el-form-item>
-						<span v-if="editData.method == 2" class="warning-message">移动模式存在风险，可能导致文件丢失（因为会删除源目录文件），该方法应仅用于不重要的文件或有多重备份的文件！希望你知道自己在做什么！</span>
+						<span v-if="editData.method == 2" class="form-warning-message">移动模式存在风险，可能导致文件丢失（因为会删除源目录文件），该方法应仅用于不重要的文件或有多重备份的文件！希望你知道自己在做什么！</span>
 						<el-form-item prop="isCron" label="调用方式">
 							<el-select v-model="editData.isCron" class="label_width">
 								<el-option label="间隔" :value="0">
@@ -1401,11 +1401,15 @@ export default {
 	}
 
 	.warning-message {
-		color: var(--color-danger);
-		font-weight: bold;
-		text-align: center;
-		font-size: 20px;
-	}
+	color: var(--color-danger) !important;
+	font-weight: bold !important;
+	text-align: center !important;
+	font-size: 16px !important;
+	margin: 20px 0 !important;
+	line-height: 1.5 !important;
+	width: 100% !important;
+	max-width: 100% !important;
+}
 	
 	.status-bg {
 		width: 50px;
@@ -1514,7 +1518,7 @@ export default {
 			min-height: 100px;
 		}
 
-		.warning-message {
+		.form-warning-message {
 			margin-top: -12px;
 			margin-left: 410px;
 			margin-bottom: 18px;
