@@ -13,253 +13,223 @@
 		<el-table :data="jobData.dataList" class="table-data" height="calc(100% - 117px)" v-loading="loading">
 			<el-table-column type="expand">
 				<template slot-scope="props">
-					<div class="form-box">
-						<!-- 基本配置 -->
-						<div class="form-section">
-							<h4 class="section-title">基本配置</h4>
-							<div class="form-box-item">
-								<div class="form-box-item-label">
-									同步方式
-								</div>
-								<div class="form-box-item-value">
-									{{ props.row.method == 0 ? '仅新增' : (props.row.method == 1 ? '全同步' : (props.row.method == 2
-										? '移动模式' : 'strm模式'))}}
-								</div>
+					<div class="job-detail">
+						<!-- 基本信息卡片 -->
+						<div class="info-card">
+							<div class="info-header">
+								<h3 class="info-title">{{ props.row.remark || '未命名作业' }}</h3>
+								<span class="job-status" :class="props.row.enable ? 'enabled' : 'disabled'">
+									{{ props.row.enable ? '已启用' : '已禁用' }}
+								</span>
 							</div>
-							<div class="form-box-item">
-								<div class="form-box-item-label">
-									调用方式
-								</div>
-								<div class="form-box-item-value">
-									{{ props.row.isCron == 0 ? '间隔' : (props.row.isCron == 1 ? 'cron' : '仅手动') }}
-								</div>
-							</div>
-							<div class="form-box-item" v-if="props.row.isCron == 0">
-								<div class="form-box-item-label">
-									同步间隔
-								</div>
-								<div class="form-box-item-value">
-									{{ props.row.interval }} 分钟
-								</div>
-							</div>
-							<template v-else-if="props.row.isCron == 1">
-								<div class="form-box-item" v-for="item in cronList" :key="item.label">
-									<div class="form-box-item-label">
-										{{ item.label }}
+							<div class="info-content">
+								<div class="info-grid">
+									<div class="info-item">
+										<span class="info-label">创建时间</span>
+										<span class="info-value">{{ props.row.createTime | timeStampFilter }}</span>
 									</div>
-									<div class="form-box-item-value">
-										{{ props.row[item.label] || '-' }}
+									<div class="info-item">
+										<span class="info-label">同步方式</span>
+										<span class="info-value">
+											<span class="method-tag" :class="`method-${props.row.method}`">
+												{{ props.row.method == 0 ? '仅新增' : (props.row.method == 1 ? '全同步' : (props.row.method == 2 ? '移动模式' : 'STRM模式'))}}
+											</span>
+										</span>
+									</div>
+									<div class="info-item">
+										<span class="info-label">调用方式</span>
+										<span class="info-value">
+											<span class="cron-tag" :class="`cron-${props.row.isCron}`">
+												{{ props.row.isCron == 0 ? '间隔' : (props.row.isCron == 1 ? 'Cron' : '仅手动') }}
+											</span>
+										</span>
+									</div>
+									<div class="info-item" v-if="props.row.isCron == 0">
+										<span class="info-label">同步间隔</span>
+										<span class="info-value">{{ props.row.interval }} 分钟</span>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- 配置卡片 -->
+						<div class="config-section">
+							<h4 class="section-title">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="section-icon"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+								配置详情
+							</h4>
+
+							<!-- 扫描配置 -->
+							<div class="config-card">
+								<div class="config-header">
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="config-icon"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+									<span class="config-title">扫描配置</span>
+								</div>
+								<div class="config-content">
+									<div class="config-grid">
+										<div class="config-item">
+											<span class="config-label">目标目录扫描</span>
+											<span class="config-value">
+												{{ props.row.useCacheT == 0 ? '不用缓存' : '使用缓存' }}，间隔 {{ props.row.scanIntervalT }} 秒
+											</span>
+										</div>
+										<div class="config-item">
+											<span class="config-label">源目录扫描</span>
+											<span class="config-value">
+												{{ props.row.useCacheS == 0 ? '不用缓存' : '使用缓存' }}，间隔 {{ props.row.scanIntervalS }} 秒
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- 匹配规则 -->
+							<div class="config-card">
+								<div class="config-header">
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="config-icon"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+									<span class="config-title">匹配规则</span>
+								</div>
+								<div class="config-content">
+									<div class="config-item full-width">
+										<span class="config-label">文件匹配正则</span>
+										<span class="config-value code">
+											{{ props.row.possess || '未设置' }}
+										</span>
+									</div>
+									<div class="config-item full-width">
+										<span class="config-label">排除项规则</span>
+										<div class="tag-list">
+											<template v-if="props.row.exclude">
+												<span v-for="(item, index) in props.row.exclude.split(':')" :key="index" class="tag">
+													{{ item }}
+												</span>
+											</template>
+											<span v-else class="empty">未设置</span>
+										</div>
+									</div>
+									<div class="config-item full-width">
+										<span class="config-label">路径排除项规则</span>
+										<div class="tag-list">
+											<template v-if="props.row.ignore_path">
+												<span v-for="(item, index) in props.row.ignore_path.split(':')" :key="index" class="tag">
+													{{ item }}
+												</span>
+											</template>
+											<span v-else class="empty">未设置</span>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Cron 配置 -->
+							<template v-if="props.row.isCron == 1">
+								<div class="config-card">
+									<div class="config-header">
+										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="config-icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+										<span class="config-title">Cron 配置</span>
+									</div>
+									<div class="config-content">
+										<div class="config-item full-width">
+											<div class="cron-config">
+												<span v-for="item in cronList" :key="item.label" class="cron-item" v-if="props.row[item.label]">
+													<span class="cron-label">{{ item.label }}:</span>
+													<span class="cron-value">{{ props.row[item.label] }}</span>
+												</span>
+												<span v-if="!props.row.year && !props.row.month && !props.row.day && !props.row.hour && !props.row.minute && !props.row.second" class="empty">
+													未配置
+												</span>
+											</div>
+										</div>
+									</div>
+								</div>
+							</template>
+
+							<!-- STRM 配置 -->
+							<template v-if="props.row.method == 3">
+								<div class="config-card">
+									<div class="config-header">
+										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="config-icon"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+										<span class="config-title">STRM 配置</span>
+									</div>
+									<div class="config-content">
+										<div class="config-grid">
+											<div class="config-item">
+												<span class="config-label">刮削文件匹配正则</span>
+												<span class="config-value code">{{ props.row.strm_nfo || '未设置' }}</span>
+											</div>
+											<div class="config-item">
+												<span class="config-label">STRM文件保存路径</span>
+												<span class="config-value">{{ props.row.strm_path || '未设置' }}</span>
+											</div>
+											<div class="config-item">
+												<span class="config-label">STRM文件内容前缀</span>
+												<span class="config-value">{{ props.row.strm_url_prefix || '未设置' }}</span>
+											</div>
+											<div class="config-item">
+												<span class="config-label">同步刮削文件到源目录</span>
+												<span class="config-value toggle" :class="props.row.strm_src_sync ? 'on' : 'off'">
+													{{ props.row.strm_src_sync ? '是' : '否' }}
+												</span>
+											</div>
+											<div class="config-item">
+												<span class="config-label">覆盖本地STRM文件</span>
+												<span class="config-value toggle" :class="props.row.strm_create_cover ? 'on' : 'off'">
+													{{ props.row.strm_create_cover ? '是' : '否' }}
+												</span>
+											</div>
+											<div class="config-item">
+												<span class="config-label">覆盖源目录刮削文件</span>
+												<span class="config-value toggle" :class="props.row.strm_src_sync_cover ? 'on' : 'off'">
+													{{ props.row.strm_src_sync_cover ? '是' : '否' }}
+												</span>
+											</div>
+										</div>
+
+										<!-- 路径映射 -->
+										<div class="config-item full-width">
+											<span class="config-label">路径映射关系</span>
+											<div class="mapping-list">
+												<template v-if="props.row.strm_path_mapping">
+													<div v-for="(mapping, index) in props.row.strm_path_mapping.split('|')" :key="index" class="mapping-item">
+														<div class="mapping-header">
+															<span class="mapping-index">{{ index + 1 }}</span>
+															<span class="mapping-library">媒体库: {{ getMediaLibraryTitle(mapping.split(':')[1]) }}</span>
+														</div>
+														<div class="mapping-content">
+															<span class="mapping-src">源: {{ mapping.split(':')[0] }}</span>
+															<span class="mapping-arrow">→</span>
+															<span class="mapping-dst">目标: {{ mapping.split(':')[2] }}</span>
+														</div>
+													</div>
+												</template>
+												<span v-else class="empty">未设置</span>
+											</div>
+										</div>
 									</div>
 								</div>
 							</template>
 						</div>
 
-						<!-- 扫描配置 -->
-						<div class="form-section">
-							<h4 class="section-title">扫描配置</h4>
-							<div class="form-box-item">
-								<div class="form-box-item-label">
-									目标目录扫描
-								</div>
-								<div class="form-box-item-value">
-									{{ props.row.useCacheT == 0 ? '不用缓存' : '使用缓存' }}，操作间隔为 {{ props.row.scanIntervalT }} 秒
-								</div>
-							</div>
-							<div class="form-box-item">
-								<div class="form-box-item-label">
-									源目录扫描
-								</div>
-								<div class="form-box-item-value">
-									{{ props.row.useCacheS == 0 ? '不用缓存' : '使用缓存' }}，操作间隔为 {{ props.row.scanIntervalS }} 秒
-								</div>
-							</div>
-						</div>
-
-						<!-- 匹配规则 -->
-						<div class="form-section">
-							<h4 class="section-title">匹配规则</h4>
-							<div class="form-box-item">
-								<div class="form-box-item-label">
-									文件匹配正则
-								</div>
-								<div class="form-box-item-value text-truncate">
-									{{ props.row.possess || '-' }}
-								</div>
-							</div>
-							<div class="form-box-item">
-								<div class="form-box-item-label">
-									排除项规则
-								</div>
-								<div class="form-box-item-value">
-									<span v-if="props.row.exclude == null">-</span>
-									<template v-else>
-										<span class="exclude-item bg-3" v-for="item in props.row.exclude.split(':')" :key="item">
-											{{ item }}
-										</span>
-									</template>
-								</div>
-							</div>
-							<div class="form-box-item">
-								<div class="form-box-item-label">
-									路径排除项规则
-								</div>
-								<div class="form-box-item-value">
-									<span v-if="props.row.ignore_path == null">-</span>
-									<template v-else>
-										<span class="exclude-item bg-3" v-for="item in props.row.ignore_path.split(':')" :key="item">
-											{{ item }}
-										</span>
-									</template>
-								</div>
-							</div>
-						</div>
-
-						<!-- strm模式配置 -->
-						<div class="form-section" v-if="props.row.method == 3">
-							<h4 class="section-title">strm模式配置</h4>
-							<div class="form-box-item">
-								<div class="form-box-item-label">
-									刮削文件匹配正则
-								</div>
-								<div class="form-box-item-value text-truncate">
-									{{ props.row.strm_nfo || '-' }}
-								</div>
-							</div>
-							<div class="form-box-item">
-								<div class="form-box-item-label">
-									strm文件保存路径
-								</div>
-								<div class="form-box-item-value text-truncate">
-									{{ props.row.strm_path || '-' }}
-								</div>
-							</div>
-							<div class="form-box-item">
-								<div class="form-box-item-label">
-									strm文件内容前缀
-								</div>
-								<div class="form-box-item-value text-truncate">
-									{{ props.row.strm_url_prefix || '-' }}
-								</div>
-							</div>
-							<div class="form-box-item">
-								<div class="form-box-item-label">
-									同步刮削文件到源目录
-								</div>
-								<div class="form-box-item-value">
-									{{ props.row.strm_src_sync == 0 ? '否' : '是' }}
-								</div>
-							</div>
-							<div class="form-box-item">
-								<div class="form-box-item-label">
-									同步文件删除本地strm
-								</div>
-								<div class="form-box-item-value">
-									{{ props.row.strm_dst_sync == 0 ? '否' : '是' }}
-								</div>
-							</div>
-							<div class="form-box-item">
-								<div class="form-box-item-label">
-									覆盖本地strm文件
-								</div>
-								<div class="form-box-item-value">
-									{{ props.row.strm_create_cover == 0 ? '否' : '是' }}
-								</div>
-							</div>
-							<div class="form-box-item">
-								<div class="form-box-item-label">
-									覆盖源目录刮削文件
-								</div>
-								<div class="form-box-item-value">
-									{{ props.row.strm_src_sync_cover == 0 ? '否' : '是' }}
-								</div>
-							</div>
-							<div class="form-box-item">
-								<div class="form-box-item-label">
-									覆盖规则(源目录路径前缀)
-								</div>
-								<div class="form-box-item-value">
-									<span v-if="props.row.strm_create_cover_possess == null">-</span>
-									<template v-else>
-										<span class="exclude-item bg-3" v-for="item in props.row.strm_create_cover_possess.split(':')" :key="item">
-											{{ item }}
-										</span>
-									</template>
-								</div>
-							</div>
-							<div class="form-box-item">
-								<div class="form-box-item-label">
-									覆盖刮削文件规则(源目录路径前缀)
-								</div>
-								<div class="form-box-item-value">
-									<span v-if="props.row.strm_src_sync_cover_possess == null">-</span>
-									<template v-else>
-										<span class="exclude-item bg-3" v-for="item in props.row.strm_src_sync_cover_possess.split(':')" :key="item">
-											{{ item }}
-										</span>
-									</template>
-								</div>
-							</div>
-							<!-- <div class="form-box-item">
-								<div class="form-box-item-label">
-									飞牛配置
-								</div>
-								<div class="form-box-item-value text-truncate">
-									<template v-if="props.row.feiniuId">
-										<span v-for="item in feiniuList" :key="item.id"
-											v-if="item.id == props.row.feiniuId">
-											{{ `${item.host} [${item.remark || item.username}]` }}
-										</span>
-									</template>
-									<span v-else>-</span>
-								</div>
-							</div> -->
-							<div class="form-box-item">
-								<div class="form-box-item-label">
-									路径映射关系
-								</div>
-								<div class="form-box-item-value">
-									<span v-if="!props.row.strm_path_mapping">-</span>
-									<template v-else>
-										<div v-for="(mapping, index) in props.row.strm_path_mapping.split('|')"
-										class="path-mapping-item bg-3" :key="index">
-											<div class="mapping-index">{{ index + 1 }}.</div>
-											<div class="mapping-content">
-												<span class="mapping-src text-truncate">{{ mapping.split(':')[0] }}</span>
-												<span class="mapping-arrow">→</span>
-												<span class="mapping-dst text-truncate">{{ mapping.split(':')[2] }}</span>
-												<span class="mapping-library">(媒体库: {{ getMediaLibraryTitle(mapping.split(':')[1]) }})</span>
-											</div>
-										</div>
-									</template>
-								</div>
-							</div>
-						</div>
-
-						<!-- 创建时间和操作按钮 -->
-						<div class="form-section">
-							<h4 class="section-title">其他</h4>
-							<div class="form-box-item">
-								<div class="form-box-item-label">
-									创建时间
-								</div>
-								<div class="form-box-item-value">
-									{{ props.row.createTime | timeStampFilter }}
-								</div>
-							</div>
-							<div class="form-box-item">
-								<div class="form-box-item-value operation-buttons">
-									<template v-if="props.row.isCron != 2">
-										<el-button type="warning" :loading="btnLoading" size="mini" v-if="props.row.enable"
-											@click="disableJobShow(props.row, false)">禁用</el-button>
-										<el-button type="success" :loading="btnLoading" size="mini" v-else
-											@click="putJob(props.row, false)">启用</el-button>
-									</template>
-									<el-button type="danger" :loading="btnLoading" size="mini"
-										@click="disableJobShow(props.row, true)">删除</el-button>
-									<el-button type="primary" :loading="btnLoading" size="mini"
-										@click="editJobShow(props.row)">编辑</el-button>
-								</div>
-							</div>
+						<!-- 操作按钮 -->
+						<div class="action-bar">
+							<template v-if="props.row.isCron != 2">
+								<el-button type="warning" :loading="btnLoading" size="mini" v-if="props.row.enable"
+									@click="disableJobShow(props.row, false)">
+									禁用
+								</el-button>
+								<el-button type="success" :loading="btnLoading" size="mini" v-else
+									@click="putJob(props.row, false)">
+									启用
+								</el-button>
+							</template>
+							<el-button type="danger" :loading="btnLoading" size="mini"
+								@click="disableJobShow(props.row, true)">
+								删除
+							</el-button>
+							<el-button type="primary" :loading="btnLoading" size="mini"
+								@click="editJobShow(props.row)">
+								编辑
+							</el-button>
 						</div>
 					</div>
 				</template>
@@ -584,7 +554,9 @@
 								</div>
 							</div>
 						</el-form-item>
-						<span v-if="editData.method == 2" class="form-warning-message">移动模式存在风险，可能导致文件丢失（因为会删除源目录文件），该方法应仅用于不重要的文件或有多重备份的文件！希望你知道自己在做什么！</span>
+						<el-form-item v-if="editData.method == 2" class="warning-message-item">
+	<div class="warning-message">移动模式存在风险，可能导致文件丢失（因为会删除源目录文件），该方法应仅用于不重要的文件或有多重备份的文件！希望你知道自己在做什么！</div>
+</el-form-item>
 						<el-form-item prop="isCron" label="调用方式">
 							<el-select v-model="editData.isCron" class="label_width">
 								<el-option label="间隔" :value="0">
@@ -1454,22 +1426,80 @@ export default {
 	margin-right: 0;
 }
 
+/* 表单容器样式 */
+.form-box {
+	padding: 16px;
+	background-color: var(--bg-secondary);
+	border-radius: 8px;
+	border: 1px solid var(--border-color);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
 /* 表单分组样式 */
 .form-section {
-	margin-bottom: 20px;
-	padding: 12px;
+	margin-bottom: 24px;
+	padding: 20px;
 	background-color: var(--bg-quaternary);
-	border-radius: 6px;
+	border-radius: 12px;
 	border: 1px solid var(--border-light);
+	transition: all 0.3s ease;
+	
+	&:hover {
+		border-color: var(--color-primary);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	}
 }
 
 .section-title {
-	margin: 0 0 12px 0;
-	font-size: 16px;
-	font-weight: bold;
+	margin: 0 0 16px 0;
+	font-size: 18px;
+	font-weight: 600;
 	color: var(--text-primary);
-	border-bottom: 1px solid var(--border-light);
-	padding-bottom: 6px;
+	border-bottom: 2px solid var(--color-primary);
+	padding-bottom: 8px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	
+	&::before {
+		content: '';
+		display: inline-block;
+		width: 4px;
+		height: 20px;
+		background-color: var(--color-primary);
+		border-radius: 2px;
+	}
+}
+
+/* 表单项样式 */
+.form-box-item {
+	margin-bottom: 16px;
+	display: grid;
+	grid-template-columns: 180px 1fr;
+	align-items: flex-start;
+	gap: 16px;
+	
+	&:last-child {
+		margin-bottom: 0;
+	}
+}
+
+.form-box-item-label {
+	font-weight: 500;
+	color: var(--text-primary);
+	font-size: 14px;
+	line-height: 20px;
+	padding-top: 2px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.form-box-item-value {
+	color: var(--text-secondary);
+	font-size: 14px;
+	line-height: 20px;
+	word-break: break-all;
 }
 
 /* 文本截断样式 */
@@ -1477,125 +1507,887 @@ export default {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	max-width: 400px;
+	max-width: 500px;
 	display: inline-block;
 	vertical-align: middle;
 }
 
+/* 排除项样式 */
+.exclude-item {
+	margin-right: 8px;
+	margin-bottom: 8px;
+	padding: 4px 12px;
+	border-radius: 16px;
+	background-color: var(--bg-tertiary);
+	color: var(--text-primary);
+	border: 1px solid var(--border-light);
+	font-size: 13px;
+	display: inline-block;
+	transition: all 0.2s ease;
+	
+	&:hover {
+		background-color: var(--bg-quinary);
+		border-color: var(--color-primary);
+		transform: translateY(-1px);
+	}
+}
+
 /* 路径映射项样式 */
 .path-mapping-item {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			padding: 8px 12px;
-			background-color: var(--bg-secondary);
-			border-radius: 4px;
-			margin-bottom: 8px;
-		}
-
-		.grid-layout {
-			display: grid;
-			grid-template-columns: 1fr 1fr;
-			gap: 16px;
-		}
-
-		.option-left {
-			float: left;
-			margin-right: 16px;
-		}
-
-		.option-right {
-			float: right;
-			color: #7b9dad;
-			font-size: 13px;
-		}
-
-		.label-list-item {
-			margin-bottom: 8px;
-		}
-
-		.label-width {
-			min-height: 100px;
-		}
-
-		.form-warning-message {
-			margin-top: -12px;
-			margin-left: 410px;
-			margin-bottom: 18px;
-			color: #f56c6c;
-			font-weight: bold;
-		}
-
-		.no-margin {
-			margin-left: 0;
-		}
-
-		.mapping-content {
-			max-width: 400px;
-		}
+	display: flex;
+	align-items: flex-start;
+	padding: 12px 16px;
+	background-color: var(--bg-tertiary);
+	border-radius: 8px;
+	margin-bottom: 12px;
+	border: 1px solid var(--border-light);
+	transition: all 0.2s ease;
+	
+	&:hover {
+		border-color: var(--color-primary);
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	}
+	
+	&:last-child {
+		margin-bottom: 0;
+	}
+}
 
 .mapping-index {
-	margin-right: 8px;
-	font-weight: bold;
-	min-width: 20px;
+	margin-right: 12px;
+	font-weight: 600;
+	color: var(--color-primary);
+	min-width: 24px;
+	text-align: center;
+	background-color: rgba(255, 255, 255, 0.1);
+	padding: 2px 8px;
+	border-radius: 12px;
+	font-size: 13px;
 }
 
 .mapping-content {
 	display: flex;
-	align-items: center;
+	flex-direction: column;
 	flex: 1;
-	flex-wrap: wrap;
-	gap: 8px;
+	gap: 6px;
 }
 
 .mapping-src,
 .mapping-dst {
-	max-width: 200px;
+	max-width: 100%;
+	font-size: 13px;
+	color: var(--text-primary);
 }
 
 .mapping-arrow {
-	margin: 0 4px;
-	color: var(--text-secondary);
+	margin: 0 8px;
+	color: var(--text-tertiary);
+	font-size: 14px;
+	font-weight: bold;
 }
 
 .mapping-library {
 	font-size: 12px;
 	color: var(--text-tertiary);
-	margin-left: 8px;
-	flex-basis: 100%;
-	margin-top: 2px;
+	margin-left: 0;
+	padding: 2px 8px;
+	background-color: rgba(0, 0, 0, 0.05);
+	border-radius: 4px;
+	align-self: flex-start;
 }
 
 /* 操作按钮样式 */
 .operation-buttons {
 	display: flex;
-	gap: 8px;
+	gap: 12px;
 	flex-wrap: wrap;
+	padding: 12px 0;
 }
 
-/* 响应式调整 */
-@media (max-width: 768px) {
+/* 响应式设计 */
+@media (max-width: 1024px) {
+	.form-box-item {
+		grid-template-columns: 150px 1fr;
+		gap: 12px;
+	}
+	
 	.text-truncate {
-		max-width: 200px;
+		max-width: 350px;
+	}
+}
+
+@media (max-width: 768px) {
+	.form-box {
+		padding: 12px;
+	}
+	
+	.form-section {
+		padding: 16px;
+		margin-bottom: 16px;
+	}
+	
+	.section-title {
+		font-size: 16px;
+		margin-bottom: 12px;
+	}
+	
+	.form-box-item {
+		grid-template-columns: 1fr;
+		gap: 8px;
+	}
+	
+	.form-box-item-label {
+		font-weight: 600;
+		color: var(--color-primary);
+		padding-top: 0;
+	}
+	
+	.text-truncate {
+		max-width: 100%;
+	}
+	
+	.path-mapping-item {
+		padding: 8px 12px;
+		flex-direction: column;
+		gap: 8px;
+	}
+	
+	.mapping-index {
+		align-self: flex-start;
+	}
+	
+	.mapping-content {
+		flex-direction: column;
+		gap: 4px;
 	}
 	
 	.mapping-src,
 	.mapping-dst {
-		max-width: 120px;
+		max-width: 100%;
 	}
 	
-	.form-section {
-		padding: 8px;
-		margin-bottom: 12px;
+	.mapping-arrow {
+		display: none;
 	}
 	
-	.section-title {
+	.exclude-item {
+		margin-right: 6px;
+		margin-bottom: 6px;
+		padding: 3px 10px;
+		font-size: 12px;
+	}
+}
+
+/* 作业详情容器 */
+.job-detail {
+	padding: 16px;
+	background-color: var(--bg-secondary);
+	border-radius: 8px;
+	border: 1px solid var(--border-color);
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* 基本信息卡片 */
+.info-card {
+	background-color: var(--bg-quaternary);
+	border-radius: 12px;
+	border: 1px solid var(--border-light);
+	padding: 20px;
+	margin-bottom: 24px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+	transition: all 0.3s ease;
+	
+	&:hover {
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+	}
+}
+
+.info-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 16px;
+}
+
+.info-title {
+	font-size: 20px;
+	font-weight: 600;
+	color: var(--text-primary);
+	margin: 0;
+}
+
+.job-status {
+	padding: 4px 12px;
+	border-radius: 16px;
+	font-size: 13px;
+	font-weight: 500;
+	
+	&.enabled {
+		background-color: rgba(82, 196, 26, 0.1);
+		color: var(--color-success);
+		border: 1px solid var(--color-success);
+	}
+	
+	&.disabled {
+		background-color: rgba(250, 128, 114, 0.1);
+		color: var(--color-danger);
+		border: 1px solid var(--color-danger);
+	}
+}
+
+.info-content {
+	padding-top: 16px;
+	border-top: 1px solid var(--border-light);
+}
+
+.info-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+	gap: 16px;
+}
+
+.info-item {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.info-label {
+	font-size: 13px;
+	color: var(--text-secondary);
+	font-weight: 500;
+}
+
+.info-value {
+	font-size: 14px;
+	color: var(--text-primary);
+	font-weight: 400;
+}
+
+/* 方法标签 */
+.method-tag {
+	padding: 3px 10px;
+	border-radius: 12px;
+	font-size: 12px;
+	font-weight: 500;
+	
+	&.method-0 {
+		background-color: rgba(82, 196, 26, 0.1);
+		color: var(--color-success);
+		border: 1px solid rgba(82, 196, 26, 0.3);
+	}
+	
+	&.method-1 {
+		background-color: rgba(247, 186, 42, 0.1);
+		color: var(--color-warning);
+		border: 1px solid rgba(247, 186, 42, 0.3);
+	}
+	
+	&.method-2 {
+		background-color: rgba(245, 108, 108, 0.1);
+		color: var(--color-danger);
+		border: 1px solid rgba(245, 108, 108, 0.3);
+	}
+	
+	&.method-3 {
+		background-color: rgba(144, 147, 153, 0.1);
+		color: var(--color-info);
+		border: 1px solid rgba(144, 147, 153, 0.3);
+	}
+}
+
+/* Cron标签 */
+.cron-tag {
+	padding: 3px 10px;
+	border-radius: 12px;
+	font-size: 12px;
+	font-weight: 500;
+	
+	&.cron-0 {
+		background-color: rgba(82, 196, 26, 0.1);
+		color: var(--color-success);
+		border: 1px solid rgba(82, 196, 26, 0.3);
+	}
+	
+	&.cron-1 {
+		background-color: rgba(247, 186, 42, 0.1);
+		color: var(--color-warning);
+		border: 1px solid rgba(247, 186, 42, 0.3);
+	}
+	
+	&.cron-2 {
+		background-color: rgba(144, 147, 153, 0.1);
+		color: var(--color-info);
+		border: 1px solid rgba(144, 147, 153, 0.3);
+	}
+}
+
+/* 配置区域 */
+.config-section {
+	margin-bottom: 24px;
+}
+
+.section-title {
+	font-size: 18px;
+	font-weight: 600;
+	color: var(--text-primary);
+	margin-bottom: 20px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding-bottom: 10px;
+	border-bottom: 2px solid var(--color-primary);
+}
+
+.section-icon {
+	color: var(--color-primary);
+}
+
+/* 配置卡片 */
+.config-card {
+	background-color: var(--bg-quaternary);
+	border-radius: 12px;
+	border: 1px solid var(--border-light);
+	padding: 20px;
+	margin-bottom: 20px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+	transition: all 0.3s ease;
+	
+	&:hover {
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+		border-color: var(--color-primary);
+	}
+}
+
+.config-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 16px;
+	padding-bottom: 12px;
+	border-bottom: 1px solid var(--border-light);
+}
+
+.config-icon {
+	color: var(--color-primary);
+	width: 16px;
+	height: 16px;
+}
+
+.config-title {
+	font-size: 16px;
+	font-weight: 500;
+	color: var(--text-primary);
+}
+
+.config-content {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+/* 配置网格 */
+.config-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+	gap: 16px;
+}
+
+.config-item {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	
+	&.full-width {
+		grid-column: 1 / -1;
+	}
+}
+
+.config-label {
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--text-primary);
+}
+
+.config-value {
+	font-size: 14px;
+	color: var(--text-secondary);
+	word-break: break-all;
+	
+	&.code {
+		background-color: rgba(0, 0, 0, 0.05);
+		border: 1px solid var(--border-light);
+		border-radius: 6px;
+		padding: 8px 12px;
+		font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+		font-size: 13px;
+		line-height: 1.5;
+	}
+	
+	&.toggle {
+		padding: 2px 8px;
+		border-radius: 12px;
+		font-size: 13px;
+		font-weight: 500;
+		
+		&.on {
+			background-color: rgba(82, 196, 26, 0.1);
+			color: var(--color-success);
+			border: 1px solid var(--color-success);
+		}
+		
+		&.off {
+			background-color: rgba(250, 128, 114, 0.1);
+			color: var(--color-danger);
+			border: 1px solid var(--color-danger);
+		}
+	}
+}
+
+/* 标签列表 */
+.tag-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+}
+
+.tag {
+	padding: 4px 12px;
+	background-color: var(--bg-tertiary);
+	color: var(--text-primary);
+	border: 1px solid var(--border-light);
+	border-radius: 16px;
+	font-size: 13px;
+	transition: all 0.2s ease;
+	
+	&:hover {
+		background-color: var(--bg-quinary);
+		border-color: var(--color-primary);
+		transform: translateY(-1px);
+	}
+}
+
+/* 空值样式 */
+.empty {
+	color: var(--text-tertiary);
+	font-style: italic;
+	font-size: 14px;
+}
+
+/* Cron配置 */
+.cron-config {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	align-items: center;
+}
+
+.cron-item {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 14px;
+}
+
+.cron-label {
+	font-weight: 500;
+	color: var(--text-primary);
+}
+
+.cron-value {
+	color: var(--text-secondary);
+}
+
+/* 路径映射 */
+.mapping-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.mapping-item {
+	background-color: var(--bg-tertiary);
+	border: 1px solid var(--border-light);
+	border-radius: 8px;
+	padding: 12px;
+	transition: all 0.2s ease;
+	
+	&:hover {
+		border-color: var(--color-primary);
+		transform: translateY(-1px);
+	}
+}
+
+.mapping-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 8px;
+}
+
+.mapping-index {
+	font-weight: 600;
+	color: var(--color-primary);
+	background-color: rgba(255, 255, 255, 0.1);
+	padding: 2px 8px;
+	border-radius: 12px;
+	font-size: 13px;
+}
+
+.mapping-media-library {
+	font-size: 13px;
+	color: var(--text-secondary);
+}
+
+.mapping-content {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.mapping-src,
+.mapping-dst {
+	font-size: 13px;
+	color: var(--text-primary);
+	max-width: 100%;
+	word-break: break-all;
+}
+
+.mapping-arrow {
+	color: var(--text-tertiary);
+	font-weight: bold;
+	font-size: 14px;
+}
+
+/* 操作按钮栏 */
+.action-bar {
+	display: flex;
+	gap: 12px;
+	justify-content: flex-start;
+	align-items: center;
+	padding-top: 16px;
+	border-top: 1px solid var(--border-light);
+}
+
+.action-bar .el-button {
+	border-radius: 6px;
+	font-weight: 500;
+	transition: all 0.3s ease;
+	
+	&:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	}
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+	.info-grid,
+	.config-grid {
+		grid-template-columns: 1fr;
+	}
+	
+	.info-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+	}
+	
+	.action-bar {
+		flex-wrap: wrap;
+	}
+}
+
+/* 清除默认样式 */
+.form-box,
+.form-section,
+.form-box-item,
+.form-box-item-label,
+.form-box-item-value {
+	all: unset;
+	box-sizing: border-box;
+}
+
+.form-box {
+	display: block;
+}
+
+.form-section {
+	display: block;
+}
+
+.form-box-item {
+	display: block;
+}
+
+.form-box-item-label {
+	display: block;
+}
+
+.form-box-item-value {
+	display: block;
+}
+
+/* 编辑弹框容器样式 */
+.elform-box {
+	max-height: 70vh;
+	overflow-y: auto;
+	padding-right: 10px;
+	/* 在移动端调整最大高度和内边距 */
+	@media (max-width: 768px) {
+		max-height: 60vh;
+		padding-right: 5px;
+	}
+}
+
+/* 编辑弹框网格布局 */
+.grid-layout {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 24px;
+	align-items: start;
+	padding: 16px 0;
+}
+
+/* 确保表单项占满网格单元格 */
+.grid-layout .el-form-item {
+	margin-bottom: 0;
+	transition: all 0.3s ease;
+}
+
+/* 表单项标签样式优化 */
+.grid-layout .el-form-item__label {
+	font-weight: 600;
+	color: var(--text-primary);
+	font-size: 14px;
+	line-height: 38px;
+	padding-bottom: 0;
+	text-align: right;
+	vertical-align: middle;
+}
+
+/* 表单项内容中心对齐 */
+.grid-layout .el-form-item__content {
+	vertical-align: middle;
+	line-height: 38px;
+}
+
+/* 输入框宽度优化 */
+.grid-layout .label_width {
+	width: 100%;
+	max-width: 100%;
+}
+
+/* 开关组件对齐优化 */
+.grid-layout .el-switch {
+	margin-top: 0;
+	vertical-align: middle;
+}
+
+/* 按钮组件对齐优化 */
+.grid-layout .el-button {
+	margin-top: 0;
+	vertical-align: middle;
+}
+
+/* 选择框对齐优化 */
+.grid-layout .el-select {
+	vertical-align: middle;
+}
+
+/* 输入框对齐优化 */
+.grid-layout .el-input {
+	vertical-align: middle;
+}
+
+/* 警告消息项样式 */
+.grid-layout .warning-message-item {
+	grid-column: 1 / -1;
+	margin-bottom: 16px;
+	padding: 12px 16px;
+	background-color: rgba(250, 128, 114, 0.1);
+	border: 1px solid rgba(250, 128, 114, 0.3);
+	border-radius: 8px;
+}
+
+/* 警告消息文本样式 */
+.warning-message {
+	color: var(--color-danger);
+	font-size: 14px;
+	line-height: 1.5;
+	font-weight: 500;
+	text-align: left;
+}
+
+/* 路径映射相关表单项的特殊处理 */
+.grid-layout .el-form-item:nth-child(n+44) {
+	grid-column: span 1;
+}
+
+/* 表单分组样式 */
+.form-group {
+	grid-column: 1 / -1;
+	margin: 24px 0 16px;
+	padding: 16px;
+	background-color: var(--bg-tertiary);
+	border: 1px solid var(--border-light);
+	border-radius: 12px;
+}
+
+.form-group-title {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--color-primary);
+	margin: 0 0 8px 0;
+	padding-bottom: 8px;
+	border-bottom: 2px solid var(--color-primary);
+}
+
+.form-group-description {
+	font-size: 13px;
+	color: var(--text-secondary);
+	margin: 0;
+	line-height: 1.4;
+}
+
+/* 间隔提示样式优化 */
+.interval-tip {
+	grid-column: 2;
+	margin-top: 8px;
+	font-size: 12px;
+	color: var(--text-secondary);
+	line-height: 1.4;
+}
+
+/* 链接样式优化 */
+.to-link {
+	color: var(--color-primary);
+	text-decoration: underline;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	font-size: 13px;
+	
+	&:hover {
+		color: var(--color-primary-dark);
+		text-decoration: none;
+	}
+}
+
+/* 标签列表样式优化 */
+.label-list-box {
+	min-height: 42px;
+	padding: 8px 0;
+}
+
+.label-list-item {
+	margin: 6px 12px 6px 0;
+	transition: all 0.3s ease;
+	
+	&:hover {
+		transform: translateY(-1px);
+	}
+}
+
+.label-list-item-left {
+	padding: 4px 10px;
+	border-radius: 6px;
+	font-size: 13px;
+	line-height: 1.4;
+	margin-right: 6px;
+}
+
+/* 响应式设计 - 编辑弹框 */
+@media (max-width: 768px) {
+	.grid-layout {
+		grid-template-columns: 1fr;
+		gap: 16px;
+		padding: 8px 0;
+	}
+	
+	.grid-layout .el-form-item:nth-child(n+44) {
+		grid-column: span 1;
+	}
+	
+	.form-group {
+		margin: 16px 0 8px;
+		padding: 12px;
+	}
+	
+	.form-group-title {
 		font-size: 14px;
-		margin-bottom: 8px;
 	}
 	
-	.path-mapping-item {
-		padding: 2px 4px;
+	.interval-tip {
+		grid-column: 1;
+		margin-top: 4px;
 	}
+}
+
+/* 滚动条样式优化 */
+.elform-box::-webkit-scrollbar {
+	width: 8px;
+}
+
+.elform-box::-webkit-scrollbar-track {
+	background: var(--bg-tertiary);
+	border-radius: 4px;
+}
+
+.elform-box::-webkit-scrollbar-thumb {
+	background: var(--border-color);
+	border-radius: 4px;
+	
+	&:hover {
+		background: var(--border-dark);
+	}
+}
+
+/* 表单元素交互优化 */
+.grid-layout .el-input__inner,
+.grid-layout .el-select__input,
+.grid-layout .el-textarea__inner {
+	transition: all 0.3s ease;
+	border-radius: 6px;
+}
+
+.grid-layout .el-input__inner:focus,
+.grid-layout .el-select__input.is-focus,
+.grid-layout .el-textarea__inner:focus {
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+}
+
+/* 按钮样式优化 */
+.grid-layout .el-button {
+	border-radius: 6px;
+	transition: all 0.3s ease;
+	
+	&:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	}
+}
+
+/* 选择框选项样式优化 */
+.grid-layout .el-select-dropdown__item {
+	transition: all 0.2s ease;
+	
+	&:hover {
+		background-color: var(--bg-tertiary);
+	}
+}
+
+/* 配置项分组标题 */
+.config-group-title {
+	grid-column: 1 / -1;
+	margin: 20px 0 12px;
+	padding: 8px 0;
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--color-primary);
+	border-bottom: 2px solid var(--color-primary);
 }
 </style>

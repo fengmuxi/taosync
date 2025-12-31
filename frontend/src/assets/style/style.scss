@@ -1052,6 +1052,13 @@ body, html {
   border: 1px solid rgba(64, 158, 255, .8);
 }
 
+/* 浅色主题适配 */
+.dark .bg-1 {
+  color: var(--color-warning);
+  background-color: rgba(230, 162, 60, .3);
+  border: 1px solid rgba(230, 162, 60, .8);
+}
+
 .bg-2 {
   color: var(--color-success);
   background-color: rgba(103, 194, 58, .3);

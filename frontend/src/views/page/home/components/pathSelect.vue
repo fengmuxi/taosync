@@ -1,6 +1,6 @@
 <template>
 	<div class="pathSelect">
-		<el-dialog top="8vh" :close-on-click-modal="false" :visible.sync="dialogShow" title="选择目录" width="90%" max-width="520px"
+		<el-dialog top="8vh" :close-on-click-modal="false" :visible.sync="dialogShow" title="选择目录" width="50%" max-width="520px"
 			:before-close="closeShow" :append-to-body="true">
       <el-input
           placeholder="输入关键字进行过滤"
