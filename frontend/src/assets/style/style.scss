@@ -2009,35 +2009,59 @@ body, html {
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   border: 1px solid var(--border-light);
-  background-color: var(--bg-quaternary);
+  background-color: #ffffff !important;
   opacity: 1 !important;
   filter: alpha(opacity=100); /* IE 兼容 */
   
   .el-dialog__header {
-    background-color: var(--bg-tertiary);
-    border-bottom: 1px solid var(--border-light);
+    background-color: #f5f7fa !important;
+    border-bottom: 1px solid #ebeef5;
     border-radius: 8px 8px 0 0;
     padding: 20px;
   }
   
   .el-dialog__title {
-    color: var(--text-primary);
+    color: #303133;
     font-weight: bold;
   }
   
   .el-dialog__body {
     padding: 20px;
-    color: var(--text-secondary);
-    background-color: var(--bg-quaternary) !important;
+    color: #606266;
+    background-color: #ffffff !important;
     opacity: 1 !important;
     filter: alpha(opacity=100); /* IE 兼容 */
   }
   
   .el-dialog__footer {
-    background-color: var(--bg-tertiary);
-    border-top: 1px solid var(--border-light);
+    background-color: #f5f7fa !important;
+    border-top: 1px solid #ebeef5;
     border-radius: 0 0 8px 8px;
     padding: 15px 20px;
+  }
+}
+
+// 深色模式下的对话框样式
+.dark .el-dialog {
+  background-color: #121212 !important;
+  
+  .el-dialog__header {
+    background-color: #1E1E1E !important;
+    border-bottom: 1px solid #303030;
+  }
+  
+  .el-dialog__title {
+    color: #F0F0F0;
+  }
+  
+  .el-dialog__body {
+    background-color: #121212 !important;
+    color: #E8E8E8;
+  }
+  
+  .el-dialog__footer {
+    background-color: #1E1E1E !important;
+    border-top: 1px solid #303030;
   }
 }
 
