@@ -23,6 +23,7 @@ def checkExs(path, rts, spec, wantSpec, strmSpec, ignore_path, includeRegex):
     :param spec: 排除规则
     :param strmSpec: 刮削文件规则
     :param wantSpec: 需要规则
+    :param includeRegex: 包含的正则表达式对象（已编译）
     :return: 排除后的内容列表
     """
     rtsNew = rts.copy()
@@ -34,44 +35,82 @@ def checkExs(path, rts, spec, wantSpec, strmSpec, ignore_path, includeRegex):
         strm_spec_del = True
         strm_del = True
         file_del = True
+        
+        # 构建完整文件路径
+        fullPath = path + rtsItem
+        
         # ignore匹配扫描文件
         if spec:
-            if not spec.match_file(path + rtsItem):
+            if not spec.match_file(fullPath):
                 spec_del = False
         else:
             spec_del = False
 
         # 排除指定路径
         if ignore_path:
-            ignore_path_del = is_path_prefix(path + rtsItem, ignore_path)
+            ignore_path_del = is_path_prefix(fullPath, ignore_path)
         else:
             ignore_path_del = False
 
         # 正则匹配文件全路径
         if includeRegex:
-            if includeRegex.match(path + rtsItem):
-                exclude_regex_del = False
+            try:
+                if includeRegex.match(fullPath):
+                    include_regex_del = False
+                    # 记录匹配成功的日志
+                    print(f"正则匹配成功: {fullPath}")
+                else:
+                    include_regex_del = True
+                    print(f"正则匹配失败: {fullPath}")
+            except Exception as e:
+                print(f"正则匹配错误: {fullPath}, 错误: {e}")
+                include_regex_del = True
         else:
-            exclude_regex_del = False
+            include_regex_del = False
 
         # 正则匹配文件后缀
         if not rtsItem.endswith("/"):
             # 匹配需要生成strm文件存在保留
             if wantSpec:
-                if re.search(wantSpec, rtsItem):
-                    want_spec_del = False
+                try:
+                    if re.search(wantSpec, rtsItem):
+                        want_spec_del = False
+                except Exception as e:
+                    print(f"wantSpec正则错误: {rtsItem}, 错误: {e}")
+                    want_spec_del = True
             # 匹配刮削文件存在保留
             if strmSpec:
-                if re.search(strmSpec, rtsItem):
-                    strm_spec_del = False
+                try:
+                    if re.search(strmSpec, rtsItem):
+                        strm_spec_del = False
+                except Exception as e:
+                    print(f"strmSpec正则错误: {rtsItem}, 错误: {e}")
+                    strm_spec_del = True
             # 匹配strm文件存在保留
             if re.search("\.(strm)$", rtsItem):
                 strm_del = False
         else:
             file_del = False
-        # 判断删除内容
-        if spec_del or ignore_path_del or includeRegex or (want_spec_del and strm_spec_del and strm_del and file_del):
+        
+        # 判断删除内容：只有当所有条件都为True时才删除
+        # spec_del: True表示需要删除（匹配排除规则）
+        # ignore_path_del: True表示需要删除（匹配忽略路径）
+        # include_regex_del: True表示需要删除（不匹配包含正则）
+        # want_spec_del: True表示需要删除（不匹配需要规则）
+        # strm_spec_del: True表示需要删除（不匹配刮削规则）
+        # strm_del: True表示需要删除（不是strm文件）
+        # file_del: True表示需要删除（是文件）
+        
+        # 修正逻辑：只有在STRM模式下才验证相关字段
+        should_delete = False
+        if spec_del or ignore_path_del or include_regex_del:
+            should_delete = True
+        elif not rtsItem.endswith("/") and (want_spec_del and strm_spec_del and strm_del and file_del):
+            should_delete = True
+            
+        if should_delete:
             del rtsNew[rtsItem]
+    
     return rtsNew
 
 

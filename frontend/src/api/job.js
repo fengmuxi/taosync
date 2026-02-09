@@ -164,3 +164,18 @@ export function jobGetTaskItem(params) {
 		params
 	})
 }
+
+// 验证正则表达式
+export function validateRegex(data) {
+	return request({
+		url: '/job',
+		headers: {
+			isMask: false
+		},
+		method: 'post',
+		data: {
+			validateRegex: 1,
+			...data
+		}
+	})
+}

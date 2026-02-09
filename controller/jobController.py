@@ -2,6 +2,7 @@
 @Author：dr34m
 @Date  ：2024/7/10 12:10 
 """
+import re
 from concurrent.futures import ThreadPoolExecutor
 
 from tornado.concurrent import run_on_executor
@@ -55,9 +56,102 @@ class Job(BaseHandler):
             return taskService.getTaskItemList(req)
         return jobService.getJobList(req)
 
+    def validateRegex(self, req):
+        """
+        验证正则表达式
+        :param req: 请求参数，包含 regex 和 testPaths
+        :return: 验证结果
+        """
+        try:
+            regex_pattern = req.get('regex', '')
+            test_paths = req.get('testPaths', [])
+            is_case_sensitive = req.get('caseSensitive', True)
+            is_global = req.get('globalMatch', True)
+            
+            if not regex_pattern:
+                return {
+                    'success': False,
+                    'message': '正则表达式不能为空',
+                    'results': []
+                }
+            
+            # 编译正则表达式
+            flags = 0
+            if not is_case_sensitive:
+                flags |= re.IGNORECASE
+            if is_global:
+                flags |= re.MULTILINE
+            
+            try:
+                compiled_regex = re.compile(regex_pattern, flags)
+            except Exception as e:
+                return {
+                    'success': False,
+                    'message': f'正则表达式编译失败: {str(e)}',
+                    'results': []
+                }
+            
+            # 测试路径
+            results = []
+            for path in test_paths:
+                try:
+                    # 查找所有匹配
+                    matches = list(compiled_regex.finditer(path))
+                    matched = len(matches) > 0
+                    
+                    # 准备匹配数据
+                    match_data = []
+                    for match in matches:
+                        # 获取所有捕获组
+                        groups = {
+                            'fullMatch': match.group()
+                        }
+                        # 添加命名捕获组
+                        if match.groupdict():
+                            groups['namedGroups'] = match.groupdict()
+                        # 添加编号捕获组
+                        for i in range(1, match.re.groups + 1):
+                            groups[f'group{i}'] = match.group(i)
+                        
+                        match_data.append({
+                            'text': match.group(),
+                            'start': match.start(),
+                            'end': match.end(),
+                            'groups': groups
+                        })
+                    
+                    results.append({
+                        'path': path,
+                        'matched': matched,
+                        'matchedCount': len(matches),
+                        'matches': match_data,
+                        'matchedText': matches[0].group() if matched else None
+                    })
+                except Exception as e:
+                    results.append({
+                        'path': path,
+                        'matched': False,
+                        'error': str(e)
+                    })
+            
+            return {
+                'success': True,
+                'message': '验证成功',
+                'results': results
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'message': f'验证过程出错: {str(e)}',
+                'results': []
+            }
+
     @run_on_executor
     @handle_request
     def post(self, req):
+        if 'validateRegex' in req:
+            # 验证正则表达式
+            return self.validateRegex(req)
         if 'id' in req:
             if 'copy' in req:
                 jobService.copyJobClient(req)

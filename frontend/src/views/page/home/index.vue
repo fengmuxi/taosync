@@ -32,7 +32,8 @@
 										<span class="info-label">同步方式</span>
 										<span class="info-value">
 											<span class="method-tag" :class="`method-${props.row.method}`">
-												{{ props.row.method == 0 ? '仅新增' : (props.row.method == 1 ? '全同步' : (props.row.method == 2 ? '移动模式' : 'STRM模式'))}}
+												{{ props.row.method == 0 ? '仅新增' : (props.row.method == 1 ? '全同步' :
+													(props.row.method == 2 ? '移动模式' : 'STRM模式'))}}
 											</span>
 										</span>
 									</div>
@@ -40,7 +41,8 @@
 										<span class="info-label">调用方式</span>
 										<span class="info-value">
 											<span class="cron-tag" :class="`cron-${props.row.isCron}`">
-												{{ props.row.isCron == 0 ? '间隔' : (props.row.isCron == 1 ? 'Cron' : '仅手动') }}
+												{{ props.row.isCron == 0 ? '间隔' : (props.row.isCron == 1 ? 'Cron' :
+												'仅手动') }}
 											</span>
 										</span>
 									</div>
@@ -55,14 +57,27 @@
 						<!-- 配置卡片 -->
 						<div class="config-section">
 							<h4 class="section-title">
-								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="section-icon"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+									fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+									stroke-linejoin="round" class="section-icon">
+									<circle cx="12" cy="12" r="3"></circle>
+									<path
+										d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+									</path>
+								</svg>
 								配置详情
 							</h4>
 
 							<!-- 扫描配置 -->
 							<div class="config-card">
 								<div class="config-header">
-									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="config-icon"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+										fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+										stroke-linejoin="round" class="config-icon">
+										<circle cx="12" cy="12" r="10"></circle>
+										<line x1="12" y1="8" x2="12" y2="12"></line>
+										<line x1="12" y1="16" x2="12.01" y2="16"></line>
+									</svg>
 									<span class="config-title">扫描配置</span>
 								</div>
 								<div class="config-content">
@@ -70,13 +85,15 @@
 										<div class="config-item">
 											<span class="config-label">目标目录扫描</span>
 											<span class="config-value">
-												{{ props.row.useCacheT == 0 ? '不用缓存' : '使用缓存' }}，间隔 {{ props.row.scanIntervalT }} 秒
+												{{ props.row.useCacheT == 0 ? '不用缓存' : '使用缓存' }}，间隔 {{
+													props.row.scanIntervalT }} 秒
 											</span>
 										</div>
 										<div class="config-item">
 											<span class="config-label">源目录扫描</span>
 											<span class="config-value">
-												{{ props.row.useCacheS == 0 ? '不用缓存' : '使用缓存' }}，间隔 {{ props.row.scanIntervalS }} 秒
+												{{ props.row.useCacheS == 0 ? '不用缓存' : '使用缓存' }}，间隔 {{
+													props.row.scanIntervalS }} 秒
 											</span>
 										</div>
 									</div>
@@ -86,7 +103,11 @@
 							<!-- 匹配规则 -->
 							<div class="config-card">
 								<div class="config-header">
-									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="config-icon"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+										fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+										stroke-linejoin="round" class="config-icon">
+										<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+									</svg>
 									<span class="config-title">匹配规则</span>
 								</div>
 								<div class="config-content">
@@ -97,10 +118,17 @@
 										</span>
 									</div>
 									<div class="config-item full-width">
+										<span class="config-label">文件全路径匹配正则</span>
+										<span class="config-value code">
+											{{ props.row.pathRegex || '未设置' }}
+										</span>
+									</div>
+									<div class="config-item full-width">
 										<span class="config-label">排除项规则</span>
 										<div class="tag-list">
 											<template v-if="props.row.exclude">
-												<span v-for="(item, index) in props.row.exclude.split(':')" :key="index" class="tag">
+												<span v-for="(item, index) in props.row.exclude.split(':')" :key="index"
+													class="tag">
 													{{ item }}
 												</span>
 											</template>
@@ -111,7 +139,8 @@
 										<span class="config-label">路径排除项规则</span>
 										<div class="tag-list">
 											<template v-if="props.row.ignore_path">
-												<span v-for="(item, index) in props.row.ignore_path.split(':')" :key="index" class="tag">
+												<span v-for="(item, index) in props.row.ignore_path.split(':')"
+													:key="index" class="tag">
 													{{ item }}
 												</span>
 											</template>
@@ -125,17 +154,25 @@
 							<template v-if="props.row.isCron == 1">
 								<div class="config-card">
 									<div class="config-header">
-										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="config-icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+											viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+											stroke-linecap="round" stroke-linejoin="round" class="config-icon">
+											<circle cx="12" cy="12" r="10"></circle>
+											<polyline points="12 6 12 12 16 14"></polyline>
+										</svg>
 										<span class="config-title">Cron 配置</span>
 									</div>
 									<div class="config-content">
 										<div class="config-item full-width">
 											<div class="cron-config">
-												<span v-for="item in cronList" :key="item.label" class="cron-item" v-if="props.row[item.label]">
+												<span v-for="item in cronList" :key="item.label" class="cron-item"
+													v-if="props.row[item.label]">
 													<span class="cron-label">{{ item.label }}:</span>
 													<span class="cron-value">{{ props.row[item.label] }}</span>
 												</span>
-												<span v-if="!props.row.year && !props.row.month && !props.row.day && !props.row.hour && !props.row.minute && !props.row.second" class="empty">
+												<span
+													v-if="!props.row.year && !props.row.month && !props.row.day && !props.row.hour && !props.row.minute && !props.row.second"
+													class="empty">
 													未配置
 												</span>
 											</div>
@@ -148,7 +185,17 @@
 							<template v-if="props.row.method == 3">
 								<div class="config-card">
 									<div class="config-header">
-										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="config-icon"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+										<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+											viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+											stroke-linecap="round" stroke-linejoin="round" class="config-icon">
+											<path
+												d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z">
+											</path>
+											<polyline points="14 2 14 8 20 8"></polyline>
+											<line x1="16" y1="13" x2="8" y2="13"></line>
+											<line x1="16" y1="17" x2="8" y2="17"></line>
+											<polyline points="10 9 9 9 8 9"></polyline>
+										</svg>
 										<span class="config-title">STRM 配置</span>
 									</div>
 									<div class="config-content">
@@ -163,23 +210,27 @@
 											</div>
 											<div class="config-item">
 												<span class="config-label">STRM文件内容前缀</span>
-												<span class="config-value">{{ props.row.strm_url_prefix || '未设置' }}</span>
+												<span class="config-value">{{ props.row.strm_url_prefix || '未设置'
+													}}</span>
 											</div>
 											<div class="config-item">
 												<span class="config-label">同步刮削文件到源目录</span>
-												<span class="config-value toggle" :class="props.row.strm_src_sync ? 'on' : 'off'">
+												<span class="config-value toggle"
+													:class="props.row.strm_src_sync ? 'on' : 'off'">
 													{{ props.row.strm_src_sync ? '是' : '否' }}
 												</span>
 											</div>
 											<div class="config-item">
 												<span class="config-label">覆盖本地STRM文件</span>
-												<span class="config-value toggle" :class="props.row.strm_create_cover ? 'on' : 'off'">
+												<span class="config-value toggle"
+													:class="props.row.strm_create_cover ? 'on' : 'off'">
 													{{ props.row.strm_create_cover ? '是' : '否' }}
 												</span>
 											</div>
 											<div class="config-item">
 												<span class="config-label">覆盖源目录刮削文件</span>
-												<span class="config-value toggle" :class="props.row.strm_src_sync_cover ? 'on' : 'off'">
+												<span class="config-value toggle"
+													:class="props.row.strm_src_sync_cover ? 'on' : 'off'">
 													{{ props.row.strm_src_sync_cover ? '是' : '否' }}
 												</span>
 											</div>
@@ -190,15 +241,19 @@
 											<span class="config-label">路径映射关系</span>
 											<div class="mapping-list">
 												<template v-if="props.row.strm_path_mapping">
-													<div v-for="(mapping, index) in props.row.strm_path_mapping.split('|')" :key="index" class="mapping-item">
+													<div v-for="(mapping, index) in props.row.strm_path_mapping.split('|')"
+														:key="index" class="mapping-item">
 														<div class="mapping-header">
 															<span class="mapping-index">{{ index + 1 }}</span>
-															<span class="mapping-library">媒体库: {{ getMediaLibraryTitle(mapping.split(':')[1]) }}</span>
+															<span class="mapping-library">媒体库: {{
+																getMediaLibraryTitle(mapping.split(':')[1]) }}</span>
 														</div>
 														<div class="mapping-content">
-															<span class="mapping-src">源: {{ mapping.split(':')[0] }}</span>
+															<span class="mapping-src">源: {{ mapping.split(':')[0]
+																}}</span>
 															<span class="mapping-arrow">→</span>
-															<span class="mapping-dst">目标: {{ mapping.split(':')[2] }}</span>
+															<span class="mapping-dst">目标: {{ mapping.split(':')[2]
+																}}</span>
 														</div>
 													</div>
 												</template>
@@ -226,8 +281,7 @@
 								@click="disableJobShow(props.row, true)">
 								删除
 							</el-button>
-							<el-button type="primary" :loading="btnLoading" size="mini"
-								@click="editJobShow(props.row)">
+							<el-button type="primary" :loading="btnLoading" size="mini" @click="editJobShow(props.row)">
 								编辑
 							</el-button>
 						</div>
@@ -291,21 +345,20 @@
 							</div>
 						</el-form-item>
 						<el-form-item prop="alistId" label="引擎">
-			<el-select v-model="editData.alistId" placeholder="请选择引擎" class="label_width"
-				no-data-text="暂无引擎,请前往引擎管理创建">
-				<el-option v-for="item in alistList" :label="item.url" :value="item.id" :key="item.id">
-					<span class="option-left">{{ item.url }}{{ item.remark != null ?
-							`[${item.remark}]` : ''}}</span>
-					<span class="option-right">{{ item.userName }}</span>
-				</el-option>
-			</el-select>
-		</el-form-item>
+							<el-select v-model="editData.alistId" placeholder="请选择引擎" class="label_width"
+								no-data-text="暂无引擎,请前往引擎管理创建">
+								<el-option v-for="item in alistList" :label="item.url" :value="item.id" :key="item.id">
+									<span class="option-left">{{ item.url }}{{ item.remark != null ?
+										`[${item.remark}]` : '' }}</span>
+									<span class="option-right">{{ item.userName }}</span>
+								</el-option>
+							</el-select>
+						</el-form-item>
 						<el-form-item prop="srcPath" label="源目录">
 							<div v-if="editData.alistId == null" class="label_width">请先选择引擎</div>
 							<div v-else class="label_width">
 								{{ editData.srcPath }}
-								<el-button type="primary" size="mini"
-									:class="{'no-margin': editData.srcPath == ''}"
+								<el-button type="primary" size="mini" :class="{ 'no-margin': editData.srcPath == '' }"
 									@click="selectPath(true)">{{ editData.srcPath == '' ? '选择' : '更换' }}目录</el-button>
 							</div>
 						</el-form-item>
@@ -319,8 +372,8 @@
 										</div>
 										<el-button type="danger" size="mini" @click="delDstPath(index)">删除</el-button>
 									</div>
-									<el-button type="primary" size="mini"
-										@click="selectPath(false)">{{ editData.dstPath.length
+									<el-button type="primary" size="mini" @click="selectPath(false)">{{
+										editData.dstPath.length
 											== 0 ? '选择' : '添加'}}目录</el-button>
 								</div>
 							</div>
@@ -385,14 +438,63 @@
 								<template slot="append">秒</template>
 							</el-input>
 						</el-form-item>
-						<el-form-item prop="possess" label="匹配项正则表达式">
-							<el-input v-model="editData.possess" placeholder="匹配项正则表达式" class="label_width">
-							</el-input>
+						<el-form-item prop="possess" label="文件类型匹配项正则表达式" v-if="editData.method == 3">
+							<div class="regex-input-container">
+								<el-input v-model="editData.possess" placeholder="文件类型匹配项正则表达式" class="label_width"
+									@input="validatePossessRegex"></el-input>
+							</div>
+							<div class="regex-test-section">
+								<div class="regex-test-header">
+									<span>测试文件名</span>
+									<el-button type="primary" size="mini" @click="showPossessRegexTest">测试</el-button>
+								</div>
+							</div>
+						</el-form-item>
+						<!-- <el-form-item prop="pathRegex" label="文件路径匹配正则表达式" v-if="editData.method == 3">
+							<div class="regex-input-container">
+								<el-input v-model="editData.pathRegex" placeholder="文件路径匹配正则表达式" class="label_width"
+									@input="validatePathRegex"></el-input>
+							</div>
+							<div class="regex-test-section">
+								<div class="regex-test-header">
+									<span>测试路径</span>
+									<el-button type="primary" size="mini" @click="showPathRegexTest">测试</el-button>
+								</div>
+							</div>
+						</el-form-item> -->
+						<el-form-item prop="include_regex" label="包含文件路径正则表达式">
+							<div class="regex-input-container">
+								<el-input v-model="editData.include_regex" placeholder="包含文件路径正则表达式" class="label_width"
+									@input="validateIncludeRegex"></el-input>
+							</div>
+							<div class="regex-test-section">
+								<div class="regex-test-header">
+									<span>测试文件名</span>
+									<el-button type="primary" size="mini" @click="showIncludeRegexTest">测试</el-button>
+								</div>
+							</div>
 						</el-form-item>
 						<el-form-item prop="strm_nfo" label="刮削文件正则表达式" v-if="editData.method == 3">
-							<el-input v-model="editData.strm_nfo" placeholder="strm刮削文件正则表达式"
-								class="label_width">
-							</el-input>
+						<div class="regex-input-container">
+							<el-input v-model="editData.strm_nfo" placeholder="strm刮削文件正则表达式" class="label_width" 
+								@input="validateStrmNfoRegex"></el-input>
+						</div>
+						<div class="regex-test-section">
+							<div class="regex-test-header">
+								<span>测试文件名</span>
+								<el-button type="primary" size="mini" @click="showStrmNfoRegexTest">测试</el-button>
+							</div>
+							<!-- <div class="regex-test-results" v-if="strmNfoTestResults.length > 0">
+								<div v-for="(result, index) in strmNfoTestResults" :key="index" 
+										class="test-result" :class="{'matched': result.matched, 'error': result.error}">
+									<span class="test-path">{{ result.path }}</span>
+									<span class="test-status">{{ result.matched ? '匹配' : '不匹配' }}</span>
+									<span class="test-error" v-if="result.error">{{ result.error }}</span>
+								</div>
+							</div> -->
+						</div>
+					</el-form-item>
+						<el-form-item prop="info" label="" v-if="editData.method == 3">
 						</el-form-item>
 						<el-form-item prop="exclude" label="排除项语法">
 							<div class="label_width">类gitignore<br />
@@ -440,8 +542,7 @@
 							</el-input>
 						</el-form-item>
 						<el-form-item prop="strm_url_prefix" label="strm文件内容前缀" v-if="editData.method == 3">
-							<el-input v-model="editData.strm_url_prefix" placeholder="strm文件内容前缀"
-								class="label_width">
+							<el-input v-model="editData.strm_url_prefix" placeholder="strm文件内容前缀" class="label_width">
 							</el-input>
 						</el-form-item>
 						<el-form-item prop="strm_src_sync" label="同步刮削文件到源目录" v-if="editData.method == 3">
@@ -519,8 +620,8 @@
 						<el-form-item label="媒体库" v-if="editData.method == 3 && pathMapping.feiniuId">
 							<div class="label_width">
 								<el-select v-model="pathMapping.media_library_id" placeholder="请选择媒体库">
-									<el-option v-for="item in mediaLibraries" :key="item.guid" :label="`${item.title} (${item.guid})`"
-										:value="item.guid"></el-option>
+									<el-option v-for="item in mediaLibraries" :key="item.guid"
+										:label="`${item.title} (${item.guid})`" :value="item.guid"></el-option>
 								</el-select>
 							</div>
 						</el-form-item>
@@ -555,8 +656,9 @@
 							</div>
 						</el-form-item>
 						<el-form-item v-if="editData.method == 2" class="warning-message-item">
-	<div class="warning-message">移动模式存在风险，可能导致文件丢失（因为会删除源目录文件），该方法应仅用于不重要的文件或有多重备份的文件！希望你知道自己在做什么！</div>
-</el-form-item>
+							<div class="warning-message">
+								移动模式存在风险，可能导致文件丢失（因为会删除源目录文件），该方法应仅用于不重要的文件或有多重备份的文件！希望你知道自己在做什么！</div>
+						</el-form-item>
 						<el-form-item prop="isCron" label="调用方式">
 							<el-select v-model="editData.isCron" class="label_width">
 								<el-option label="间隔" :value="0">
@@ -590,10 +692,11 @@
 								</div>
 
 							</el-form-item>
-							<el-form-item v-for="item in cronList" :prop="item.label" :label="item.label" :key="item.label">
-							<el-input v-model="editData[item.label]" :placeholder="item.palce" class="label_width">
-							</el-input>
-						</el-form-item>
+							<el-form-item v-for="item in cronList" :prop="item.label" :label="item.label"
+								:key="item.label">
+								<el-input v-model="editData[item.label]" :placeholder="item.palce" class="label_width">
+								</el-input>
+							</el-form-item>
 						</template>
 					</div>
 				</el-form>
@@ -614,6 +717,402 @@
 			</span>
 		</el-dialog>
 		<pathSelect v-if="editData" :alistId="editData.alistId" ref="pathSelect" @submit="submitPath"></pathSelect>
+
+		<!-- 正则表达式测试对话框 -->
+		<el-dialog :close-on-click-modal="false" :visible.sync="possessTestDialogVisible" :append-to-body="true"
+			title="正则表达式测试" width="800px" :before-close="closePossessTestDialog">
+			<div class="regex-test-dialog">
+				<div class="regex-test-input">
+					<span>正则表达式：</span>
+					<el-input v-model="possessTestRegex" placeholder="输入要测试的正则表达式" class="regex-input-field" @input="validatePossessTestRegex"></el-input>
+					<div v-if="possessTestRegexValid !== null" class="regex-validation-result" :class="possessTestRegexValid ? 'valid' : 'invalid'">
+						{{ possessTestRegexMessage }}
+					</div>
+				</div>
+				<div class="regex-test-input">
+					<span>测试路径（每行一个）：</span>
+					<el-input type="textarea" :rows="8" v-model="possessTestPaths" placeholder="输入要测试的文件路径，每行一个路径"
+						@input="clearTestResults">
+					</el-input>
+				</div>
+				<div class="regex-test-actions">
+					<el-button type="primary" @click="runPossessRegexTest" :loading="editLoading">开始测试</el-button>
+					<el-button @click="possessTestDialogVisible = false">关闭</el-button>
+				</div>
+				<div class="regex-test-results" v-if="possessTestResults.length > 0">
+					<div class="results-header">
+						<span>测试结果：</span>
+						<span class="results-summary">
+							共 {{ possessTestResults.length }} 个路径，
+							匹配 {{possessTestResults.filter(r => r.matched).length}} 个，
+							不匹配 {{possessTestResults.filter(r => !r.matched).length}} 个
+						</span>
+						<div class="results-filter">
+							<el-radio-group v-model="possessTestFilter" size="mini">
+								<el-radio-button label="all">全部</el-radio-button>
+								<el-radio-button label="matched">仅显示匹配</el-radio-button>
+								<el-radio-button label="unmatched">仅显示不匹配</el-radio-button>
+							</el-radio-group>
+						</div>
+					</div>
+					<div class="results-list">
+						<div v-for="(result, index) in filteredPossessTestResults" :key="index" class="result-item"
+							:class="{ 'matched': result.matched, 'error': result.error }">
+							<span class="result-path">{{ result.path }}</span>
+							<span class="result-status">
+								<template v-if="!result.error">
+									<i :class="result.matched ? 'el-icon-success' : 'el-icon-error'"></i>
+									{{ result.matched ? `匹配 (${result.matchedCount}处)` : '不匹配' }}
+								</template>
+								<template v-else>
+									<i class="el-icon-warning"></i>
+									错误: {{ result.error }}
+								</template>
+							</span>
+							<div v-if="result.matched && result.matches" class="result-matches-detail">
+								<div v-for="(match, matchIndex) in result.matches" :key="matchIndex" class="match-detail-item">
+									<div class="match-header">
+										<span class="match-index">匹配项 {{ matchIndex + 1 }}:</span>
+										<span class="match-position">(位置: {{ match.start }}-{{ match.end }})</span>
+									</div>
+									<div class="match-content">
+										<span class="match-text">{{ match.text }}</span>
+									</div>
+									<div v-if="Object.keys(match.groups).length > 1" class="match-groups">
+										<div v-for="(groupValue, groupName) in match.groups" :key="groupName" class="group-item" v-if="groupName !== 'fullMatch'">
+											<span class="group-name">{{ groupName }}:</span>
+											<span class="group-value">{{ groupValue }}</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="regex-test-help">
+					<h4>常用正则表达式示例：</h4>
+					<div class="help-examples">
+						<div class="help-item">
+							<span class="help-regex">.*\.mp4$</span>
+							<span class="help-desc">匹配所有.mp4文件</span>
+						</div>
+						<div class="help-item">
+							<span class="help-regex">.*\.mkv$</span>
+							<span class="help-desc">匹配所有.mkv文件</span>
+						</div>
+						<div class="help-item">
+							<span class="help-regex">.*\.(mp4|mkv|avi)$</span>
+							<span class="help-desc">匹配所有视频文件</span>
+						</div>
+						<div class="help-item">
+							<span class="help-regex">^movie/.*</span>
+							<span class="help-desc">匹配movie目录下的所有文件</span>
+						</div>
+						<div class="help-item">
+							<span class="help-regex">.*\.(jpg|png|gif)$</span>
+							<span class="help-desc">匹配所有图片文件</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</el-dialog>
+
+		<!-- 文件全路径正则表达式测试对话框 -->
+		<el-dialog :close-on-click-modal="false" :visible.sync="pathTestDialogVisible" :append-to-body="true"
+			title="文件全路径正则表达式测试" width="800px" :before-close="closePathTestDialog">
+			<div class="regex-test-dialog">
+				<div class="regex-test-input">
+					<span>正则表达式：</span>
+					<el-input v-model="pathTestRegex" placeholder="输入要测试的正则表达式" class="regex-input-field" @input="validatePathTestRegex"></el-input>
+					<div v-if="pathTestRegexValid !== null" class="regex-validation-result" :class="pathTestRegexValid ? 'valid' : 'invalid'">
+						{{ pathTestRegexMessage }}
+					</div>
+				</div>
+				<div class="regex-test-input">
+					<span>测试路径（每行一个）：</span>
+					<el-input type="textarea" :rows="8" v-model="pathTestPaths" placeholder="输入要测试的文件完整路径，每行一个路径"
+						@input="clearTestResults">
+					</el-input>
+				</div>
+				<div class="regex-test-actions">
+					<el-button type="primary" @click="runPathRegexTest" :loading="editLoading">开始测试</el-button>
+					<el-button @click="pathTestDialogVisible = false">关闭</el-button>
+				</div>
+				<div class="regex-test-results" v-if="pathTestResults.length > 0">
+					<div class="results-header">
+						<span>测试结果：</span>
+						<span class="results-summary">
+							共 {{ pathTestResults.length }} 个路径，
+							匹配 {{pathTestResults.filter(r => r.matched).length}} 个，
+							不匹配 {{pathTestResults.filter(r => !r.matched).length}} 个
+						</span>
+						<div class="results-filter">
+							<el-radio-group v-model="pathTestFilter" size="mini">
+								<el-radio-button label="all">全部</el-radio-button>
+								<el-radio-button label="matched">仅显示匹配</el-radio-button>
+								<el-radio-button label="unmatched">仅显示不匹配</el-radio-button>
+							</el-radio-group>
+						</div>
+					</div>
+					<div class="results-list">
+						<div v-for="(result, index) in filteredPathTestResults" :key="index" class="result-item"
+							:class="{ 'matched': result.matched, 'error': result.error }">
+							<span class="result-path">{{ result.path }}</span>
+							<span class="result-status">
+								<template v-if="!result.error">
+									<i :class="result.matched ? 'el-icon-success' : 'el-icon-error'"></i>
+									{{ result.matched ? `匹配 (${result.matchedCount}处)` : '不匹配' }}
+								</template>
+								<template v-else>
+									<i class="el-icon-warning"></i>
+									错误: {{ result.error }}
+								</template>
+							</span>
+							<div v-if="result.matched && result.matches" class="result-matches-detail">
+								<div v-for="(match, matchIndex) in result.matches" :key="matchIndex" class="match-detail-item">
+									<div class="match-header">
+										<span class="match-index">匹配项 {{ matchIndex + 1 }}:</span>
+										<span class="match-position">(位置: {{ match.start }}-{{ match.end }})</span>
+									</div>
+									<div class="match-content">
+										<span class="match-text">{{ match.text }}</span>
+									</div>
+									<div v-if="Object.keys(match.groups).length > 1" class="match-groups">
+										<div v-for="(groupValue, groupName) in match.groups" :key="groupName" class="group-item" v-if="groupName !== 'fullMatch'">
+											<span class="group-name">{{ groupName }}:</span>
+											<span class="group-value">{{ groupValue }}</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="regex-test-help">
+					<h4>常用正则表达式示例：</h4>
+					<div class="help-examples">
+						<div class="help-item">
+							<span class="help-regex">^/movies/.*\.mp4$</span>
+							<span class="help-desc">匹配movies目录下的所有.mp4文件</span>
+						</div>
+						<div class="help-item">
+							<span class="help-regex">^/tv/.*\.mkv$</span>
+							<span class="help-desc">匹配tv目录下的所有.mkv文件</span>
+						</div>
+						<div class="help-item">
+							<span class="help-regex">^/downloads/.*\.(mp4|mkv)$</span>
+							<span class="help-desc">匹配downloads目录下的所有视频文件</span>
+						</div>
+						<div class="help-item">
+							<span class="help-regex">^/(movies|tv)/.*$</span>
+							<span class="help-desc">匹配movies或tv目录下的所有文件</span>
+						</div>
+						<div class="help-item">
+							<span class="help-regex">.*special.*\.mp4$</span>
+							<span class="help-desc">匹配文件名包含special的所有.mp4文件</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</el-dialog>
+
+		<!-- 刮削文件正则表达式测试对话框 -->
+		<el-dialog :close-on-click-modal="false" :visible.sync="strmNfoTestDialogVisible" :append-to-body="true"
+			title="刮削文件正则表达式测试" width="800px" :before-close="closeStrmNfoTestDialog">
+			<div class="regex-test-dialog">
+				<div class="regex-test-input">
+					<span>正则表达式：</span>
+					<el-input v-model="strmNfoTestRegex" placeholder="输入要测试的正则表达式" class="regex-input-field" @input="validateStrmNfoTestRegex"></el-input>
+					<div v-if="strmNfoTestRegexValid !== null" class="regex-validation-result" :class="strmNfoTestRegexValid ? 'valid' : 'invalid'">
+						{{ strmNfoTestRegexMessage }}
+					</div>
+				</div>
+				<div class="regex-test-input">
+					<span>测试路径（每行一个）：</span>
+					<el-input type="textarea" :rows="8" v-model="strmNfoTestPaths" placeholder="输入要测试的刮削文件路径，每行一个路径"
+						@input="clearTestResults">
+					</el-input>
+				</div>
+				<div class="regex-test-actions">
+					<el-button type="primary" @click="runStrmNfoRegexTest" :loading="editLoading">开始测试</el-button>
+					<el-button @click="strmNfoTestDialogVisible = false">关闭</el-button>
+				</div>
+				<div class="regex-test-results" v-if="strmNfoTestResults.length > 0">
+					<div class="results-header">
+						<span>测试结果：</span>
+						<span class="results-summary">
+							共 {{ strmNfoTestResults.length }} 个路径，
+							匹配 {{strmNfoTestResults.filter(r => r.matched).length}} 个，
+							不匹配 {{strmNfoTestResults.filter(r => !r.matched).length}} 个
+						</span>
+						<div class="results-filter">
+							<el-radio-group v-model="strmNfoTestFilter" size="mini">
+								<el-radio-button label="all">全部</el-radio-button>
+								<el-radio-button label="matched">仅显示匹配</el-radio-button>
+								<el-radio-button label="unmatched">仅显示不匹配</el-radio-button>
+							</el-radio-group>
+						</div>
+					</div>
+					<div class="results-list">
+						<div v-for="(result, index) in filteredStrmNfoTestResults" :key="index" class="result-item"
+							:class="{ 'matched': result.matched, 'error': result.error }">
+							<span class="result-path">{{ result.path }}</span>
+							<span class="result-status">
+								<template v-if="!result.error">
+									<i :class="result.matched ? 'el-icon-success' : 'el-icon-error'"></i>
+									{{ result.matched ? `匹配 (${result.matchedCount}处)` : '不匹配' }}
+								</template>
+								<template v-else>
+									<i class="el-icon-warning"></i>
+									错误: {{ result.error }}
+								</template>
+							</span>
+							<div v-if="result.matched && result.matches" class="result-matches-detail">
+								<div v-for="(match, matchIndex) in result.matches" :key="matchIndex" class="match-detail-item">
+									<div class="match-header">
+										<span class="match-index">匹配项 {{ matchIndex + 1 }}:</span>
+										<span class="match-position">(位置: {{ match.start }}-{{ match.end }})</span>
+									</div>
+									<div class="match-content">
+										<span class="match-text">{{ match.text }}</span>
+									</div>
+									<div v-if="Object.keys(match.groups).length > 1" class="match-groups">
+										<div v-for="(groupValue, groupName) in match.groups" :key="groupName" class="group-item" v-if="groupName !== 'fullMatch'">
+											<span class="group-name">{{ groupName }}:</span>
+											<span class="group-value">{{ groupValue }}</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="regex-test-help">
+					<h4>常用正则表达式示例：</h4>
+					<div class="help-examples">
+						<div class="help-item">
+							<span class="help-regex">.*\.nfo$</span>
+							<span class="help-desc">匹配所有.nfo文件</span>
+						</div>
+						<div class="help-item">
+							<span class="help-regex">^/movies/.*\.nfo$</span>
+							<span class="help-desc">匹配movies目录下的所有.nfo文件</span>
+						</div>
+						<div class="help-item">
+							<span class="help-regex">.*\.(nfo|jpg|png)$</span>
+							<span class="help-desc">匹配所有.nfo、.jpg和.png文件</span>
+						</div>
+						<div class="help-item">
+							<span class="help-regex">^/(movies|tv)/.*\.(nfo|jpg)$</span>
+							<span class="help-desc">匹配movies或tv目录下的所有.nfo和.jpg文件</span>
+						</div>
+						<div class="help-item">
+							<span class="help-regex">.*poster.*\.(jpg|png)$</span>
+							<span class="help-desc">匹配文件名包含poster的所有图片文件</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</el-dialog>
+
+		<!-- 包含文件路径正则表达式测试对话框 -->
+		<el-dialog :close-on-click-modal="false" :visible.sync="includeTestDialogVisible" :append-to-body="true"
+			title="包含文件路径正则表达式测试" width="800px">
+			<div class="regex-test-dialog">
+				<div class="regex-test-input">
+					<span>正则表达式：</span>
+					<el-input v-model="includeTestRegex" placeholder="输入要测试的正则表达式" class="regex-input-field" @input="validateIncludeTestRegex"></el-input>
+					<div v-if="includeTestRegexValid !== null" class="regex-validation-result" :class="includeTestRegexValid ? 'valid' : 'invalid'">
+						{{ includeTestRegexMessage }}
+					</div>
+				</div>
+				<div class="regex-test-input">
+					<span>测试路径（每行一个）：</span>
+					<el-input type="textarea" :rows="8" v-model="includeTestPaths" placeholder="输入要测试的文件路径，每行一个路径"
+						@input="clearTestResults">
+					</el-input>
+				</div>
+				<div class="regex-test-actions">
+					<el-button type="primary" @click="runIncludeRegexTest" :loading="editLoading">开始测试</el-button>
+					<el-button @click="includeTestDialogVisible = false">关闭</el-button>
+				</div>
+				<div class="regex-test-results" v-if="includeTestResults.length > 0">
+					<div class="results-header">
+						<span>测试结果：</span>
+						<span class="results-summary">
+							共 {{ includeTestResults.length }} 个路径，
+							匹配 {{includeTestResults.filter(r => r.matched).length}} 个，
+							不匹配 {{includeTestResults.filter(r => !r.matched).length}} 个
+						</span>
+						<div class="results-filter">
+							<el-radio-group v-model="includeTestFilter" size="mini">
+								<el-radio-button label="all">全部</el-radio-button>
+								<el-radio-button label="matched">仅显示匹配</el-radio-button>
+								<el-radio-button label="unmatched">仅显示不匹配</el-radio-button>
+							</el-radio-group>
+						</div>
+					</div>
+					<div class="results-list">
+						<div v-for="(result, index) in includeTestResults" :key="index" class="result-item"
+							:class="{ 'matched': result.matched, 'error': result.error }">
+							<span class="result-path">{{ result.path }}</span>
+							<span class="result-status">
+								<template v-if="!result.error">
+									<i :class="result.matched ? 'el-icon-success' : 'el-icon-error'"></i>
+									{{ result.matched ? `匹配 (${result.matchedCount}处)` : '不匹配' }}
+								</template>
+								<template v-else>
+									<i class="el-icon-warning"></i>
+									错误: {{ result.error }}
+								</template>
+							</span>
+							<div v-if="result.matched && result.matches" class="result-matches-detail">
+								<div v-for="(match, matchIndex) in result.matches" :key="matchIndex" class="match-detail-item">
+									<div class="match-header">
+										<span class="match-index">匹配项 {{ matchIndex + 1 }}:</span>
+										<span class="match-position">(位置: {{ match.start }}-{{ match.end }})</span>
+									</div>
+									<div class="match-content">
+										<span class="match-text">{{ match.text }}</span>
+									</div>
+									<div v-if="Object.keys(match.groups).length > 1" class="match-groups">
+										<div v-for="(groupValue, groupName) in match.groups" :key="groupName" class="group-item" v-if="groupName !== 'fullMatch'">
+											<span class="group-name">{{ groupName }}:</span>
+											<span class="group-value">{{ groupValue }}</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="regex-test-help">
+					<h4>常用正则表达式示例：</h4>
+					<div class="help-examples">
+						<div class="help-item">
+							<span class="help-regex">.*\.mp4$</span>
+							<span class="help-desc">匹配所有.mp4文件</span>
+						</div>
+						<div class="help-item">
+							<span class="help-regex">.*\.(mp4|mkv|avi)$</span>
+							<span class="help-desc">匹配所有视频文件</span>
+						</div>
+						<div class="help-item">
+							<span class="help-regex">^movie/.*</span>
+							<span class="help-desc">匹配movie目录下的所有文件</span>
+						</div>
+						<div class="help-item">
+							<span class="help-regex">.*\.(jpg|png|gif)$</span>
+							<span class="help-desc">匹配所有图片文件</span>
+						</div>
+						<div class="help-item">
+							<span class="help-regex">.*subtitle.*\.(srt|ass)$</span>
+							<span class="help-desc">匹配文件名包含subtitle的所有字幕文件</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</el-dialog>
 	</div>
 </template>
 
@@ -623,7 +1122,8 @@ import {
 	jobPut,
 	jobDelete,
 	jobPost,
-	alistGet
+	alistGet,
+	validateRegex
 } from "@/api/job";
 import {
 	getFeiniuList,
@@ -705,6 +1205,46 @@ export default {
 				media_library_id: '',
 				media_path: ''
 			},
+			// Regex validation and testing variables
+			possessRegexValid: null,
+			possessRegexMessage: '',
+			possessTestDialogVisible: false,
+			possessTestRegex: '',
+			possessTestRegexValid: null,
+			possessTestRegexMessage: '',
+			possessTestPaths: '',
+			possessTestResults: [],
+			possessTestFilter: 'all',
+			// Full path regex validation and testing variables
+			pathRegexValid: null,
+			pathRegexMessage: '',
+			pathTestDialogVisible: false,
+			pathTestRegex: '',
+			pathTestRegexValid: null,
+			pathTestRegexMessage: '',
+			pathTestPaths: '',
+			pathTestResults: [],
+			pathTestFilter: 'all',
+			// Scraping file regex validation variables
+			strmNfoRegexValid: null,
+			strmNfoRegexMessage: '',
+			strmNfoTestDialogVisible: false,
+			strmNfoTestRegex: '',
+			strmNfoTestRegexValid: null,
+			strmNfoTestRegexMessage: '',
+			strmNfoTestPaths: '',
+			strmNfoTestResults: [],
+			strmNfoTestFilter: 'all',
+			// Include regex validation and testing variables
+			includeRegexValid: null,
+			includeRegexMessage: '',
+			includeTestDialogVisible: false,
+			includeTestRegex: '',
+			includeTestRegexValid: null,
+			includeTestRegexMessage: '',
+			includeTestPaths: '',
+			includeTestResults: [],
+			includeTestFilter: 'all',
 			addRule: {
 				srcPath: [{
 					required: true,
@@ -742,6 +1282,33 @@ export default {
 		this.getJobList();
 	},
 	beforeDestroy() { },
+	computed: {
+		// Computed properties for filtered test results
+		filteredPossessTestResults() {
+			if (this.possessTestFilter === 'matched') {
+				return this.possessTestResults.filter(result => result.matched);
+			} else if (this.possessTestFilter === 'unmatched') {
+				return this.possessTestResults.filter(result => !result.matched);
+			}
+			return this.possessTestResults;
+		},
+		filteredPathTestResults() {
+			if (this.pathTestFilter === 'matched') {
+				return this.pathTestResults.filter(result => result.matched);
+			} else if (this.pathTestFilter === 'unmatched') {
+				return this.pathTestResults.filter(result => !result.matched);
+			}
+			return this.pathTestResults;
+		},
+		filteredStrmNfoTestResults() {
+			if (this.strmNfoTestFilter === 'matched') {
+				return this.strmNfoTestResults.filter(result => result.matched);
+			} else if (this.strmNfoTestFilter === 'unmatched') {
+				return this.strmNfoTestResults.filter(result => !result.matched);
+			}
+			return this.strmNfoTestResults;
+		}
+	},
 	methods: {
 		runAllJob() {
 			this.$confirm("确认执行所有未禁用的作业吗？", '提示', {
@@ -830,11 +1397,300 @@ export default {
 		delPathMapping(index) {
 			this.pathMappings.splice(index, 1);
 		},
+		clearTestResults() {
+			this.possessTestResults = [];
+			this.pathTestResults = [];
+			this.strmNfoTestResults = [];
+		},
 		toCron() {
 			window.open('https://blog.ctftools.com/2024/08/newpost-58/', '_blank');
 		},
 		toIgnore() {
 			window.open('https://blog.ctftools.com/2024/09/newpost-60/', '_blank');
+		},
+		validatePossessRegex() {
+			if (!this.editData.possess || this.editData.possess.trim() === '') {
+				this.possessRegexValid = null;
+				this.possessRegexMessage = '';
+				return;
+			}
+
+			try {
+				const regex = new RegExp(this.editData.possess);
+				this.possessRegexValid = true;
+				this.possessRegexMessage = '正则表达式格式正确';
+			} catch (e) {
+				this.possessRegexValid = false;
+				this.possessRegexMessage = `正则表达式格式错误: ${e.message}`;
+			}
+		},
+		validatePathRegex() {
+			if (!this.editData.pathRegex || this.editData.pathRegex.trim() === '') {
+				this.pathRegexValid = null;
+				this.pathRegexMessage = '';
+				return;
+			}
+			
+			try {
+				const regex = new RegExp(this.editData.pathRegex);
+				this.pathRegexValid = true;
+				this.pathRegexMessage = '正则表达式格式正确';
+			} catch (e) {
+				this.pathRegexValid = false;
+				this.pathRegexMessage = `正则表达式格式错误: ${e.message}`;
+			}
+		},
+		validateStrmNfoRegex() {
+			if (!this.editData.strm_nfo || this.editData.strm_nfo.trim() === '') {
+				this.strmNfoRegexValid = null;
+				this.strmNfoRegexMessage = '';
+				return;
+			}
+			
+			try {
+				const regex = new RegExp(this.editData.strm_nfo);
+				this.strmNfoRegexValid = true;
+				this.strmNfoRegexMessage = '正则表达式格式正确';
+			} catch (e) {
+				this.strmNfoRegexValid = false;
+				this.strmNfoRegexMessage = `正则表达式格式错误: ${e.message}`;
+			}
+		},
+		validateIncludeRegex() {
+			if (!this.editData.include_regex || this.editData.include_regex.trim() === '') {
+				this.includeRegexValid = null;
+				this.includeRegexMessage = '';
+				return;
+			}
+			
+			try {
+				const regex = new RegExp(this.editData.include_regex);
+				this.includeRegexValid = true;
+				this.includeRegexMessage = '正则表达式格式正确';
+			} catch (e) {
+				this.includeRegexValid = false;
+				this.includeRegexMessage = `正则表达式格式错误: ${e.message}`;
+			}
+		},
+		validatePossessTestRegex() {
+			if (!this.possessTestRegex || this.possessTestRegex.trim() === '') {
+				this.possessTestRegexValid = null;
+				this.possessTestRegexMessage = '';
+				return;
+			}
+			
+			try {
+				const regex = new RegExp(this.possessTestRegex);
+				this.possessTestRegexValid = true;
+				this.possessTestRegexMessage = '正则表达式格式正确';
+			} catch (e) {
+				this.possessTestRegexValid = false;
+				this.possessTestRegexMessage = `正则表达式格式错误: ${e.message}`;
+			}
+		},
+		validatePathTestRegex() {
+			if (!this.pathTestRegex || this.pathTestRegex.trim() === '') {
+				this.pathTestRegexValid = null;
+				this.pathTestRegexMessage = '';
+				return;
+			}
+			
+			try {
+				const regex = new RegExp(this.pathTestRegex);
+				this.pathTestRegexValid = true;
+				this.pathTestRegexMessage = '正则表达式格式正确';
+			} catch (e) {
+				this.pathTestRegexValid = false;
+				this.pathTestRegexMessage = `正则表达式格式错误: ${e.message}`;
+			}
+		},
+		validateStrmNfoTestRegex() {
+				if (!this.strmNfoTestRegex || this.strmNfoTestRegex.trim() === '') {
+					this.strmNfoTestRegexValid = null;
+					this.strmNfoTestRegexMessage = '';
+					return;
+				}
+				
+				try {
+					const regex = new RegExp(this.strmNfoTestRegex);
+					this.strmNfoTestRegexValid = true;
+					this.strmNfoTestRegexMessage = '正则表达式格式正确';
+				} catch (e) {
+					this.strmNfoTestRegexValid = false;
+					this.strmNfoTestRegexMessage = `正则表达式格式错误: ${e.message}`;
+				}
+			},
+			validateIncludeTestRegex() {
+				if (!this.includeTestRegex || this.includeTestRegex.trim() === '') {
+					this.includeTestRegexValid = null;
+					this.includeTestRegexMessage = '';
+					return;
+				}
+				
+				try {
+					const regex = new RegExp(this.includeTestRegex);
+					this.includeTestRegexValid = true;
+					this.includeTestRegexMessage = '正则表达式格式正确';
+				} catch (e) {
+					this.includeTestRegexValid = false;
+					this.includeTestRegexMessage = `正则表达式格式错误: ${e.message}`;
+				}
+			},
+			showStrmNfoRegexTest() {
+				this.strmNfoTestDialogVisible = true;
+				this.strmNfoTestRegex = this.editData.strm_nfo || '';
+				this.strmNfoTestPaths = '';
+				this.strmNfoTestResults = [];
+				this.validateStrmNfoTestRegex();
+			},
+			showIncludeRegexTest() {
+				this.includeTestDialogVisible = true;
+				this.includeTestRegex = this.editData.include_regex || '';
+				this.includeTestPaths = '';
+				this.includeTestResults = [];
+				this.validateIncludeTestRegex();
+			},
+		async runStrmNfoRegexTest() {
+			if (!this.strmNfoTestRegex || this.strmNfoTestRegex.trim() === '') {
+				this.$message.error('请先输入正则表达式');
+				return;
+			}
+			
+			if (!this.strmNfoTestPaths || this.strmNfoTestPaths.trim() === '') {
+				this.$message.error('请输入测试路径');
+				return;
+			}
+			
+			try {
+				const paths = this.strmNfoTestPaths.split('\n').filter(p => p.trim());
+				const response = await validateRegex({
+					regex: this.strmNfoTestRegex,
+					testPaths: paths,
+					caseSensitive: true,
+					globalMatch: true
+				});
+				
+				if (response.code == 200) {
+					this.strmNfoTestResults = response.data.results;
+					this.$message.success('测试完成');
+				} else {
+					this.$message.error(response.msg);
+					this.strmNfoTestResults = [];
+				}
+			} catch (error) {
+				this.$message.error(`测试失败: ${error.message || error}`);
+				this.strmNfoTestResults = [];
+			}
+		},
+		showPossessRegexTest() {
+			this.possessTestDialogVisible = true;
+			this.possessTestRegex = this.editData.possess || '';
+			this.possessTestPaths = '';
+			this.possessTestResults = [];
+			this.validatePossessTestRegex();
+		},
+		async runPossessRegexTest() {
+			if (!this.possessTestRegex || this.possessTestRegex.trim() === '') {
+				this.$message.error('请先输入正则表达式');
+				return;
+			}
+
+			if (!this.possessTestPaths || this.possessTestPaths.trim() === '') {
+				this.$message.error('请输入测试路径');
+				return;
+			}
+
+			try {
+				const paths = this.possessTestPaths.split('\n').filter(p => p.trim());
+				const response = await validateRegex({
+					regex: this.possessTestRegex,
+					testPaths: paths,
+					caseSensitive: true,
+					globalMatch: true
+				});
+
+				if (response.code == 200) {
+					this.possessTestResults = response.data.results;
+					this.$message.success('测试完成');
+				} else {
+					this.$message.error(response.msg);
+					this.possessTestResults = [];
+				}
+			} catch (error) {
+				this.$message.error(`测试失败: ${error.message || error}`);
+				this.possessTestResults = [];
+			}
+		},
+		showPathRegexTest() {
+			this.pathTestDialogVisible = true;
+			this.pathTestRegex = this.editData.pathRegex || '';
+			this.pathTestPaths = '';
+			this.pathTestResults = [];
+			this.validatePathTestRegex();
+		},
+		async runPathRegexTest() {
+			if (!this.pathTestRegex || this.pathTestRegex.trim() === '') {
+				this.$message.error('请先输入正则表达式');
+				return;
+			}
+
+			if (!this.pathTestPaths || this.pathTestPaths.trim() === '') {
+				this.$message.error('请输入测试路径');
+				return;
+			}
+
+			try {
+				const paths = this.pathTestPaths.split('\n').filter(p => p.trim());
+				const response = await validateRegex({
+					regex: this.pathTestRegex,
+					testPaths: paths,
+					caseSensitive: true,
+					globalMatch: true
+				});
+
+				if (response.code == 200) {
+					this.pathTestResults = response.data.results;
+					this.$message.success('测试完成');
+				} else {
+					this.$message.error(response.msg);
+					this.pathTestResults = [];
+				}
+			} catch (error) {
+				this.$message.error(`测试失败: ${error.message || error}`);
+				this.pathTestResults = [];
+			}
+		},
+		async runIncludeRegexTest() {
+			if (!this.includeTestRegex || this.includeTestRegex.trim() === '') {
+				this.$message.error('请先输入正则表达式');
+				return;
+			}
+
+			if (!this.includeTestPaths || this.includeTestPaths.trim() === '') {
+				this.$message.error('请输入测试路径');
+				return;
+			}
+
+			try {
+				const paths = this.includeTestPaths.split('\n').filter(p => p.trim());
+				const response = await validateRegex({
+					regex: this.includeTestRegex,
+					testPaths: paths,
+					caseSensitive: true,
+					globalMatch: true
+				});
+
+				if (response.code == 200) {
+					this.includeTestResults = response.data.results;
+					this.$message.success('测试完成');
+				} else {
+					this.$message.error(response.msg);
+					this.includeTestResults = [];
+				}
+			} catch (error) {
+				this.$message.error(`测试失败: ${error.message || error}`);
+				this.includeTestResults = [];
+			}
 		},
 		putJob(row, pause = null) {
 			if (row.enable != 1 && pause !== false) {
@@ -975,6 +1831,8 @@ export default {
 				isCron: 0,
 				exclude: [],
 				possess: '',
+				pathRegex: '',
+				include_regex: '',
 				ignore_path: [],
 				strm_nfo: '',
 				strm_path: '',
@@ -1027,6 +1885,16 @@ export default {
 				pause: true
 			};
 		},
+		// Regex test dialog close methods
+		closePossessTestDialog() {
+			this.possessTestDialogVisible = false;
+		},
+		closePathTestDialog() {
+			this.pathTestDialogVisible = false;
+		},
+		closeStrmNfoTestDialog() {
+			this.strmNfoTestDialogVisible = false;
+		},
 		addExclude() {
 			if (this.excludeTmp != '') {
 				this.editData.exclude.push(this.excludeTmp);
@@ -1069,6 +1937,45 @@ export default {
 		submit() {
 			this.$refs.jobRule.validate((valid) => {
 				if (valid) {
+					// 验证正则表达式字段
+					if (this.editData.include_regex && this.editData.include_regex.trim()) {
+						try {
+							new RegExp(this.editData.include_regex);
+						} catch (e) {
+							this.$message.error(`包含文件正则表达式格式错误: ${e.message}`);
+							return;
+						}
+					}
+					
+					if (this.editData.method == 3) {
+						if (this.editData.possess && this.editData.possess.trim()) {
+							try {
+								new RegExp(this.editData.possess);
+							} catch (e) {
+								this.$message.error(`文件类型匹配项正则表达式格式错误: ${e.message}`);
+								return;
+							}
+						}
+						
+						if (this.editData.pathRegex && this.editData.pathRegex.trim()) {
+							try {
+								new RegExp(this.editData.pathRegex);
+							} catch (e) {
+								this.$message.error(`文件路径匹配正则表达式格式错误: ${e.message}`);
+								return;
+							}
+						}
+						
+						if (this.editData.strm_nfo && this.editData.strm_nfo.trim()) {
+							try {
+								new RegExp(this.editData.strm_nfo);
+							} catch (e) {
+								this.$message.error(`刮削文件正则表达式格式错误: ${e.message}`);
+								return;
+							}
+						}
+					}
+					
 					let postData = JSON.parse(JSON.stringify(this.editData));
 					for (let i in postData) {
 						if (postData[i] === '') {
@@ -1204,6 +2111,7 @@ export default {
 	padding: 16px;
 	box-sizing: border-box;
 	color: var(--text-primary);
+
 	// 在移动端调整内边距
 	@media (max-width: 768px) {
 		padding: 8px;
@@ -1214,6 +2122,7 @@ export default {
 		align-items: center;
 		justify-content: space-between;
 		margin-bottom: 16px;
+
 		// 在移动端调整为垂直排列
 		@media (max-width: 768px) {
 			flex-direction: column;
@@ -1225,6 +2134,7 @@ export default {
 		.top-box-title {
 			font-weight: bold;
 			color: var(--text-primary);
+
 			// 在移动端调整字体大小
 			@media (max-width: 768px) {
 				font-size: 18px;
@@ -1235,6 +2145,7 @@ export default {
 			display: flex;
 			align-items: center;
 			gap: 10px;
+
 			// 在移动端调整为全屏宽度
 			@media (max-width: 768px) {
 				width: 100%;
@@ -1255,6 +2166,7 @@ export default {
 			margin-right: 6px;
 			border-radius: 3px;
 			color: var(--text-primary);
+
 			// 在移动端调整字体大小和内边距
 			@media (max-width: 768px) {
 				font-size: 12px;
@@ -1272,12 +2184,13 @@ export default {
 		margin-top: 24px;
 		display: flex;
 		justify-content: center;
+
 		// 在移动端调整间距
 		@media (max-width: 768px) {
 			margin-top: 16px;
 		}
 	}
-	
+
 	// 表格容器响应式处理
 	.table-data {
 		@media (max-width: 768px) {
@@ -1290,6 +2203,7 @@ export default {
 .label_width {
 	width: 100%;
 	max-width: 240px;
+
 	// 在移动端调整宽度
 	@media (max-width: 768px) {
 		width: 100%;
@@ -1301,6 +2215,7 @@ export default {
 		align-items: center;
 		flex-wrap: wrap;
 		min-height: 42px;
+
 		// 在移动端调整最小高度
 		@media (max-width: 768px) {
 			min-height: 36px;
@@ -1312,6 +2227,7 @@ export default {
 			margin: 4px 0;
 			margin-right: 12px;
 			flex-shrink: 0;
+
 			// 在移动端调整间距
 			@media (max-width: 768px) {
 				margin-right: 8px;
@@ -1324,6 +2240,7 @@ export default {
 				margin-right: -4px;
 				max-width: 180px;
 				color: var(--text-primary);
+
 				// 在移动端调整最大宽度和行高
 				@media (max-width: 768px) {
 					max-width: 120px;
@@ -1335,6 +2252,7 @@ export default {
 			.el-button {
 				margin-left: 10px;
 				border-radius: 0 3px 3px 0;
+
 				// 在移动端调整间距和大小
 				@media (max-width: 768px) {
 					margin-left: 6px;
@@ -1349,6 +2267,7 @@ export default {
 		color: var(--color-primary);
 		text-decoration: underline;
 		cursor: pointer;
+
 		// 在移动端调整字体大小
 		@media (max-width: 768px) {
 			font-size: 12px;
@@ -1373,16 +2292,16 @@ export default {
 	}
 
 	.warning-message {
-	color: var(--color-danger) !important;
-	font-weight: bold !important;
-	text-align: center !important;
-	font-size: 16px !important;
-	margin: 20px 0 !important;
-	line-height: 1.5 !important;
-	width: 100% !important;
-	max-width: 100% !important;
-}
-	
+		color: var(--color-danger) !important;
+		font-weight: bold !important;
+		text-align: center !important;
+		font-size: 16px !important;
+		margin: 20px 0 !important;
+		line-height: 1.5 !important;
+		width: 100% !important;
+		max-width: 100% !important;
+	}
+
 	.status-bg {
 		width: 50px;
 	}
@@ -1391,6 +2310,7 @@ export default {
 .label_width_2 {
 	width: 100%;
 	max-width: 600px;
+
 	// 在移动端调整宽度
 	@media (max-width: 768px) {
 		width: 100%;
@@ -1402,6 +2322,7 @@ export default {
 	max-height: 70vh;
 	overflow-y: auto;
 	padding-right: 10px;
+
 	// 在移动端调整最大高度和内边距
 	@media (max-width: 768px) {
 		max-height: 60vh;
@@ -1414,6 +2335,7 @@ export default {
 	padding: 0 2px;
 	border-radius: 3px;
 	color: var(--text-primary);
+
 	// 在移动端调整间距和内边距
 	@media (max-width: 768px) {
 		margin-right: 4px;
@@ -1443,7 +2365,7 @@ export default {
 	border-radius: 12px;
 	border: 1px solid var(--border-light);
 	transition: all 0.3s ease;
-	
+
 	&:hover {
 		border-color: var(--color-primary);
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -1460,7 +2382,7 @@ export default {
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	
+
 	&::before {
 		content: '';
 		display: inline-block;
@@ -1478,7 +2400,7 @@ export default {
 	grid-template-columns: 180px 1fr;
 	align-items: flex-start;
 	gap: 16px;
-	
+
 	&:last-child {
 		margin-bottom: 0;
 	}
@@ -1524,7 +2446,7 @@ export default {
 	font-size: 13px;
 	display: inline-block;
 	transition: all 0.2s ease;
-	
+
 	&:hover {
 		background-color: var(--bg-quinary);
 		border-color: var(--color-primary);
@@ -1542,13 +2464,13 @@ export default {
 	margin-bottom: 12px;
 	border: 1px solid var(--border-light);
 	transition: all 0.2s ease;
-	
+
 	&:hover {
 		border-color: var(--color-primary);
 		transform: translateY(-2px);
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 	}
-	
+
 	&:last-child {
 		margin-bottom: 0;
 	}
@@ -1611,7 +2533,7 @@ export default {
 		grid-template-columns: 150px 1fr;
 		gap: 12px;
 	}
-	
+
 	.text-truncate {
 		max-width: 350px;
 	}
@@ -1621,56 +2543,56 @@ export default {
 	.form-box {
 		padding: 12px;
 	}
-	
+
 	.form-section {
 		padding: 16px;
 		margin-bottom: 16px;
 	}
-	
+
 	.section-title {
 		font-size: 16px;
 		margin-bottom: 12px;
 	}
-	
+
 	.form-box-item {
 		grid-template-columns: 1fr;
 		gap: 8px;
 	}
-	
+
 	.form-box-item-label {
 		font-weight: 600;
 		color: var(--color-primary);
 		padding-top: 0;
 	}
-	
+
 	.text-truncate {
 		max-width: 100%;
 	}
-	
+
 	.path-mapping-item {
 		padding: 8px 12px;
 		flex-direction: column;
 		gap: 8px;
 	}
-	
+
 	.mapping-index {
 		align-self: flex-start;
 	}
-	
+
 	.mapping-content {
 		flex-direction: column;
 		gap: 4px;
 	}
-	
+
 	.mapping-src,
 	.mapping-dst {
 		max-width: 100%;
 	}
-	
+
 	.mapping-arrow {
 		display: none;
 	}
-	
+
 	.exclude-item {
 		margin-right: 6px;
 		margin-bottom: 6px;
@@ -1697,7 +2619,7 @@ export default {
 	margin-bottom: 24px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 	transition: all 0.3s ease;
-	
+
 	&:hover {
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 	}
@@ -1722,15 +2644,15 @@ export default {
 	border-radius: 16px;
 	font-size: 13px;
 	font-weight: 500;
-	
+
 	&.enabled {
-		background-color: rgba(82, 196, 26, 0.1);
+		background-color: var(--bg-success-light);
 		color: var(--color-success);
 		border: 1px solid var(--color-success);
 	}
-	
+
 	&.disabled {
-		background-color: rgba(250, 128, 114, 0.1);
+		background-color: var(--bg-danger-light);
 		color: var(--color-danger);
 		border: 1px solid var(--color-danger);
 	}
@@ -1771,29 +2693,29 @@ export default {
 	border-radius: 12px;
 	font-size: 12px;
 	font-weight: 500;
-	
+
 	&.method-0 {
-		background-color: rgba(82, 196, 26, 0.1);
+		background-color: var(--bg-success-light);
 		color: var(--color-success);
-		border: 1px solid rgba(82, 196, 26, 0.3);
+		border: 1px solid var(--border-success-light);
 	}
-	
+
 	&.method-1 {
-		background-color: rgba(247, 186, 42, 0.1);
+		background-color: var(--bg-warning-light);
 		color: var(--color-warning);
-		border: 1px solid rgba(247, 186, 42, 0.3);
+		border: 1px solid var(--border-warning-light);
 	}
-	
+
 	&.method-2 {
-		background-color: rgba(245, 108, 108, 0.1);
+		background-color: var(--bg-danger-light);
 		color: var(--color-danger);
-		border: 1px solid rgba(245, 108, 108, 0.3);
+		border: 1px solid var(--border-danger-light);
 	}
-	
+
 	&.method-3 {
-		background-color: rgba(144, 147, 153, 0.1);
+		background-color: var(--bg-info-light);
 		color: var(--color-info);
-		border: 1px solid rgba(144, 147, 153, 0.3);
+		border: 1px solid var(--border-info-light);
 	}
 }
 
@@ -1803,23 +2725,23 @@ export default {
 	border-radius: 12px;
 	font-size: 12px;
 	font-weight: 500;
-	
+
 	&.cron-0 {
-		background-color: rgba(82, 196, 26, 0.1);
+		background-color: var(--bg-success-light);
 		color: var(--color-success);
-		border: 1px solid rgba(82, 196, 26, 0.3);
+		border: 1px solid var(--border-success-light);
 	}
-	
+
 	&.cron-1 {
-		background-color: rgba(247, 186, 42, 0.1);
+		background-color: var(--bg-warning-light);
 		color: var(--color-warning);
-		border: 1px solid rgba(247, 186, 42, 0.3);
+		border: 1px solid var(--border-warning-light);
 	}
-	
+
 	&.cron-2 {
-		background-color: rgba(144, 147, 153, 0.1);
+		background-color: var(--bg-info-light);
 		color: var(--color-info);
-		border: 1px solid rgba(144, 147, 153, 0.3);
+		border: 1px solid var(--border-info-light);
 	}
 }
 
@@ -1853,7 +2775,7 @@ export default {
 	margin-bottom: 20px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 	transition: all 0.3s ease;
-	
+
 	&:hover {
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 		border-color: var(--color-primary);
@@ -1898,7 +2820,7 @@ export default {
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
-	
+
 	&.full-width {
 		grid-column: 1 / -1;
 	}
@@ -1914,7 +2836,7 @@ export default {
 	font-size: 14px;
 	color: var(--text-secondary);
 	word-break: break-all;
-	
+
 	&.code {
 		background-color: rgba(0, 0, 0, 0.05);
 		border: 1px solid var(--border-light);
@@ -1924,19 +2846,19 @@ export default {
 		font-size: 13px;
 		line-height: 1.5;
 	}
-	
+
 	&.toggle {
 		padding: 2px 8px;
 		border-radius: 12px;
 		font-size: 13px;
 		font-weight: 500;
-		
+
 		&.on {
 			background-color: rgba(82, 196, 26, 0.1);
 			color: var(--color-success);
 			border: 1px solid var(--color-success);
 		}
-		
+
 		&.off {
 			background-color: rgba(250, 128, 114, 0.1);
 			color: var(--color-danger);
@@ -1961,7 +2883,7 @@ export default {
 	border-radius: 16px;
 	font-size: 13px;
 	transition: all 0.2s ease;
-	
+
 	&:hover {
 		background-color: var(--bg-quinary);
 		border-color: var(--color-primary);
@@ -2013,7 +2935,7 @@ export default {
 	border-radius: 8px;
 	padding: 12px;
 	transition: all 0.2s ease;
-	
+
 	&:hover {
 		border-color: var(--color-primary);
 		transform: translateY(-1px);
@@ -2076,7 +2998,7 @@ export default {
 	border-radius: 6px;
 	font-weight: 500;
 	transition: all 0.3s ease;
-	
+
 	&:hover {
 		transform: translateY(-2px);
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -2085,17 +3007,18 @@ export default {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+
 	.info-grid,
 	.config-grid {
 		grid-template-columns: 1fr;
 	}
-	
+
 	.info-header {
 		flex-direction: column;
 		align-items: flex-start;
 		gap: 12px;
 	}
-	
+
 	.action-bar {
 		flex-wrap: wrap;
 	}
@@ -2136,6 +3059,7 @@ export default {
 	max-height: 70vh;
 	overflow-y: auto;
 	padding-right: 10px;
+
 	/* 在移动端调整最大高度和内边距 */
 	@media (max-width: 768px) {
 		max-height: 60vh;
@@ -2269,10 +3193,518 @@ export default {
 	cursor: pointer;
 	transition: all 0.3s ease;
 	font-size: 13px;
-	
+
 	&:hover {
 		color: var(--color-primary-dark);
 		text-decoration: none;
+	}
+}
+
+/* 正则表达式输入容器 */
+.regex-input-container {
+	position: relative;
+	width: 100%;
+}
+
+/* 正则表达式状态指示器 */
+.regex-status {
+	position: absolute;
+	right: 10px;
+	top: 50%;
+	transform: translateY(-50%);
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 12px;
+
+	&.valid {
+		color: var(--color-success);
+	}
+
+	&.invalid {
+		color: var(--color-danger);
+	}
+}
+
+/* 正则表达式测试区域 */
+.regex-test-section {
+	margin-top: 12px;
+	padding: 12px;
+	background-color: var(--bg-tertiary);
+	border-radius: 8px;
+	border: 1px solid var(--border-light);
+}
+
+.regex-test-header {
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--text-primary);
+	margin-bottom: 12px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/* 正则表达式测试结果 */
+.regex-test-results {
+		margin-top: 16px;
+		display: flex;
+		flex-direction: column;
+		max-height: 600px;
+	}
+
+	.regex-test-results .results-header {
+		position: sticky;
+		top: 0;
+		background-color: var(--bg-primary);
+		z-index: 10;
+		padding-top: 10px;
+		margin-bottom: 12px;
+	}
+
+	.regex-test-results .results-list {
+		overflow-y: auto;
+		max-height: calc(600px - 80px);
+		flex: 1;
+	}
+
+.results-header {
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--text-primary);
+	margin-bottom: 12px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid var(--border-light);
+}
+
+.results-summary {
+	color: var(--text-secondary);
+	font-size: 13px;
+}
+
+.results-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.test-result {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 8px 12px;
+	border-radius: 6px;
+	background-color: var(--bg-quaternary);
+	border: 1px solid var(--border-light);
+	transition: all 0.3s ease;
+
+	&.matched {
+		background-color: rgba(103, 194, 58, 0.1);
+		border-color: var(--color-success);
+	}
+
+	&.error {
+		background-color: rgba(250, 128, 114, 0.1);
+		border-color: var(--color-danger);
+	}
+}
+
+.test-path {
+	font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+	font-size: 13px;
+	color: var(--text-primary);
+	word-break: break-all;
+	max-width: 400px;
+}
+
+.test-status {
+	font-size: 13px;
+	font-weight: 500;
+	padding: 4px 12px;
+	border-radius: 12px;
+
+	&.matched {
+		background-color: var(--color-success);
+		color: white;
+	}
+
+	&.error {
+		background-color: var(--color-danger);
+		color: white;
+	}
+}
+
+.test-error {
+	color: var(--color-danger);
+	font-size: 12px;
+	font-style: italic;
+}
+
+.test-matched-text {
+	color: var(--text-secondary);
+	font-size: 12px;
+	margin-left: 8px;
+	font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+/* 正则表达式测试对话框样式 */
+.regex-test-dialog {
+	height: 60vh;
+    overflow: auto;
+
+	.regex-test-input {
+		margin-bottom: 16px;
+	}
+
+	.regex-test-actions {
+		display: flex;
+		gap: 12px;
+		margin-bottom: 16px;
+		padding-bottom: 16px;
+		border-bottom: 1px solid var(--border-light);
+	}
+
+	.regex-test-results {
+		margin-top: 16px;
+		display: flex;
+		flex-direction: column;
+		max-height: 600px;
+	}
+
+	.regex-test-results .results-header {
+		position: sticky;
+		top: 0;
+		background-color: var(--bg-primary);
+		z-index: 10;
+		padding-top: 10px;
+		margin-bottom: 12px;
+	}
+
+	.regex-test-results .results-list {
+		overflow-y: auto;
+		max-height: calc(600px - 80px);
+		flex: 1;
+	}
+
+	.regex-test-help {
+		margin-top: 20px;
+		padding: 16px;
+		background-color: var(--bg-tertiary);
+		border-radius: 8px;
+		border: 1px solid var(--border-light);
+
+		h4 {
+			font-size: 16px;
+			font-weight: 600;
+			color: var(--text-primary);
+			margin: 0 0 12px 0;
+			padding-bottom: 8px;
+			border-bottom: 2px solid var(--color-primary);
+		}
+	}
+
+	.results-filter {
+		margin-top: 12px;
+		margin-bottom: 12px;
+
+		.el-radio-group {
+			.el-radio-button {
+				.el-radio-button__inner {
+					background-color: var(--bg-primary);
+					border-color: var(--border-light);
+					color: var(--text-primary);
+
+					&:hover {
+						background-color: var(--bg-secondary);
+						border-color: var(--border-primary);
+					}
+
+					&:focus {
+						background-color: var(--bg-secondary);
+					}
+				}
+
+				&.is-active {
+					.el-radio-button__inner {
+						background-color: var(--color-primary);
+						border-color: var(--color-primary);
+						color: white;
+
+						&:hover {
+							background-color: var(--color-primary-hover);
+							border-color: var(--color-primary-hover);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	.regex-input-field {
+		margin-bottom: 8px;
+		width: 100%;
+	}
+
+	.regex-validation-result {
+		font-size: 12px;
+		margin-bottom: 12px;
+
+		&.valid {
+			color: var(--color-success);
+		}
+
+		&.invalid {
+			color: var(--color-danger);
+		}
+	}
+
+	.results-header {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		margin-bottom: 12px;
+	}
+
+	.results-summary {
+		margin-top: 4px;
+		font-size: 13px;
+		color: var(--text-secondary);
+	}
+
+	.result-matches-detail {
+		margin-top: 12px;
+		padding: 12px;
+		background-color: var(--bg-quaternary);
+		border-radius: 6px;
+		border: 1px solid var(--border-light);
+	}
+
+	.match-detail-item {
+		margin-bottom: 12px;
+		padding-bottom: 12px;
+		border-bottom: 1px solid var(--border-light);
+	}
+
+	.match-detail-item:last-child {
+		margin-bottom: 0;
+		padding-bottom: 0;
+		border-bottom: none;
+	}
+
+	.match-header {
+		display: flex;
+		align-items: center;
+		margin-bottom: 6px;
+	}
+
+	.match-index {
+		font-weight: 500;
+		font-size: 14px;
+		color: var(--text-primary);
+		margin-right: 8px;
+	}
+
+	.match-position {
+		font-size: 12px;
+		color: var(--text-secondary);
+	}
+
+	.match-content {
+		margin-bottom: 8px;
+	}
+
+	.match-text {
+		font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+		font-size: 14px;
+		color: var(--color-success);
+		background-color: rgba(103, 194, 58, 0.15);
+		padding: 6px 10px;
+		border-radius: 6px;
+		border-left: 3px solid var(--color-success);
+		display: inline-block;
+		margin-bottom: 8px;
+		transition: all 0.2s ease;
+
+		&:hover {
+			background-color: rgba(103, 194, 58, 0.25);
+		}
+	}
+
+	.match-groups {
+		margin-left: 24px;
+		background-color: var(--bg-quinary);
+		padding: 10px;
+		border-radius: 6px;
+		border: 1px solid var(--border-light);
+	}
+
+	.group-item {
+		display: flex;
+		margin-bottom: 6px;
+		font-size: 13px;
+		align-items: center;
+	}
+
+	.group-item:last-child {
+		margin-bottom: 0;
+	}
+
+	.group-name {
+		font-weight: 600;
+		color: var(--text-secondary);
+		margin-right: 12px;
+		min-width: 100px;
+		font-size: 12px;
+		text-transform: capitalize;
+		letter-spacing: 0.5px;
+	}
+
+	.group-value {
+		font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+		color: var(--text-primary);
+		word-break: break-all;
+		background-color: var(--bg-tertiary);
+		padding: 4px 8px;
+		border-radius: 4px;
+		border: 1px solid var(--border-light);
+		flex: 1;
+	}
+
+	/* 增强匹配项的视觉效果 */
+	.match-detail-item {
+		transition: all 0.3s ease;
+
+		&:hover {
+			background-color: rgba(0, 0, 0, 0.02);
+			padding-left: 8px;
+			border-radius: 6px;
+		}
+	}
+
+	/* 为匹配状态添加不同的图标颜色 */
+	.result-status {
+		& i {
+			margin-right: 6px;
+		}
+
+		& .el-icon-success {
+			color: var(--color-success);
+		}
+
+		& .el-icon-error {
+			color: var(--color-danger);
+		}
+
+		& .el-icon-warning {
+			color: var(--color-warning);
+		}
+	}
+
+	/* 优化结果项的整体样式 */
+	.result-item {
+		transition: all 0.3s ease;
+		margin-bottom: 12px;
+		padding: 12px;
+		border-radius: 8px;
+		border: 1px solid var(--border-light);
+		background-color: var(--bg-primary);
+
+		&:hover {
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+		}
+
+		&.matched {
+			border-left: 3px solid var(--color-success);
+			background-color: rgba(103, 194, 58, 0.05);
+			border-color: rgba(103, 194, 58, 0.2);
+		}
+
+		&.error {
+			border-left: 3px solid var(--color-danger);
+			background-color: rgba(245, 34, 45, 0.05);
+			border-color: rgba(245, 34, 45, 0.2);
+		}
+
+		/* 美化未匹配项的样式 */
+		&:not(.matched):not(.error) {
+			border-left: 3px solid var(--color-warning);
+			background-color: rgba(250, 173, 20, 0.05);
+			border-color: rgba(250, 173, 20, 0.2);
+
+			.result-status {
+				color: var(--color-warning);
+
+				& i {
+					color: var(--color-warning);
+				}
+			}
+
+			.result-path {
+				color: var(--text-secondary);
+				font-style: italic;
+			}
+		}
+
+		.result-path {
+			font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+			font-size: 14px;
+			color: var(--text-primary);
+			margin-bottom: 8px;
+			display: block;
+			word-break: break-all;
+		}
+
+		.result-status {
+			font-size: 13px;
+			font-weight: 500;
+			display: inline-flex;
+			align-items: center;
+			padding: 4px 12px;
+			border-radius: 12px;
+			background-color: var(--bg-secondary);
+			color: var(--text-primary);
+
+			& i {
+				margin-right: 6px;
+			}
+		}
+	}
+
+	.help-examples {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	.help-item {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px;
+		background-color: var(--bg-quaternary);
+		border-radius: 6px;
+		border: 1px solid var(--border-light);
+		transition: all 0.2s ease;
+
+		&:hover {
+			background-color: var(--bg-quinary);
+			border-color: var(--color-primary);
+			transform: translateY(-2px);
+		}
+	}
+
+	.help-regex {
+		font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+		font-size: 13px;
+		color: var(--color-primary);
+		background-color: rgba(64, 158, 255, 0.1);
+		padding: 4px 8px;
+		border-radius: 4px;
+	}
+
+	.help-desc {
+		font-size: 13px;
+		color: var(--text-secondary);
 	}
 }
 
@@ -2285,7 +3717,7 @@ export default {
 .label-list-item {
 	margin: 6px 12px 6px 0;
 	transition: all 0.3s ease;
-	
+
 	&:hover {
 		transform: translateY(-1px);
 	}
@@ -2306,20 +3738,20 @@ export default {
 		gap: 16px;
 		padding: 8px 0;
 	}
-	
+
 	.grid-layout .el-form-item:nth-child(n+44) {
 		grid-column: span 1;
 	}
-	
+
 	.form-group {
 		margin: 16px 0 8px;
 		padding: 12px;
 	}
-	
+
 	.form-group-title {
 		font-size: 14px;
 	}
-	
+
 	.interval-tip {
 		grid-column: 1;
 		margin-top: 4px;
@@ -2339,7 +3771,7 @@ export default {
 .elform-box::-webkit-scrollbar-thumb {
 	background: var(--border-color);
 	border-radius: 4px;
-	
+
 	&:hover {
 		background: var(--border-dark);
 	}
@@ -2364,7 +3796,7 @@ export default {
 .grid-layout .el-button {
 	border-radius: 6px;
 	transition: all 0.3s ease;
-	
+
 	&:hover {
 		transform: translateY(-1px);
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -2374,7 +3806,7 @@ export default {
 /* 选择框选项样式优化 */
 .grid-layout .el-select-dropdown__item {
 	transition: all 0.2s ease;
-	
+
 	&:hover {
 		background-color: var(--bg-tertiary);
 	}

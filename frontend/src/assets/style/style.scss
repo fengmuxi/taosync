@@ -1,13 +1,20 @@
 // 主题变量定义 - 已移除默认配色
 // 系统将根据.light或.dark类来应用不同的主题配色
 // :root {  
-  // 公共变量 - 仅保留非主题相关变量
-  // --color-primary: #D4AF37;
-  // --color-success: #67C23A;
-  // --color-warning: #E6A23C;
-  // --color-danger: #F56C6C;
-  // --color-info: #909399;
+//   公共变量 - 仅保留非主题相关变量
+//   --color-primary: #D4AF37;
+//   --color-success: #67C23A;
+//   --color-warning: #E6A23C;
+//   --color-danger: #F56C6C;
+//   --color-info: #909399;
 // }
+
+// 浏览器兼容性修复混合宏
+@mixin opacity($opacity) {
+  opacity: $opacity;
+  filter: alpha(opacity=($opacity * 100)); /* IE 8 */
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=($opacity * 100))"; /* IE 8 */
+}
 
 // 全局容器样式修复
 body, html {
@@ -45,6 +52,10 @@ body, html {
   --bg-tertiary: #1E1E1E;
   --bg-quaternary: #262626;
   --bg-quinary: #303030;
+  --bg-success-light: rgba(103, 194, 58, 0.1);
+  --bg-warning-light: rgba(230, 162, 60, 0.1);
+  --bg-danger-light: rgba(245, 108, 108, 0.1);
+  --bg-info-light: rgba(144, 147, 153, 0.1);
   
   // 文本色 - 确保与背景对比度符合WCAG AA级（4.5:1）
   --text-primary: #F0F0F0;
@@ -54,6 +65,10 @@ body, html {
   // 边框色 - 金色
   --border-color: #3A3A3A;
   --border-light: #4A4A4A;
+  --border-success-light: rgba(103, 194, 58, 0.3);
+  --border-warning-light: rgba(230, 162, 60, 0.3);
+  --border-danger-light: rgba(245, 108, 108, 0.3);
+  --border-info-light: rgba(144, 147, 153, 0.3);
   
   // 主色调 - 金色
   --color-primary: #D4AF37;
@@ -141,11 +156,19 @@ body, html {
   --bg-tertiary: #FFFFFF;
   --bg-quaternary: #F5F5F5;
   --bg-quinary: #EAEAEA;
+  --bg-success-light: rgba(103, 194, 58, 0.1);
+  --bg-warning-light: rgba(230, 162, 60, 0.1);
+  --bg-danger-light: rgba(245, 108, 108, 0.1);
+  --bg-info-light: rgba(144, 147, 153, 0.1);
   --text-primary: #202020;
   --text-secondary: #303030;
   --text-tertiary: #606060;
   --border-color: #D0D0D0;
   --border-light: #E0E0E0;
+  --border-success-light: rgba(103, 194, 58, 0.3);
+  --border-warning-light: rgba(230, 162, 60, 0.3);
+  --border-danger-light: rgba(245, 108, 108, 0.3);
+  --border-info-light: rgba(144, 147, 153, 0.3);
   --switch-bg: #D0D0D0;
   --switch-button: #FFFFFF;
   --switch-disabled-bg: #EAEAEA;
@@ -1962,12 +1985,33 @@ body, html {
   }
 }
 
+// 弹框遮罩层样式修复
+.v-modal {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  opacity: 1 !important;
+  filter: alpha(opacity=50); /* IE 兼容 */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2000;
+}
+
+// 深色模式下的遮罩层样式
+.dark .v-modal {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+  filter: alpha(opacity=70); /* IE 兼容 */
+}
+
 // 对话框样式优化
 .el-dialog {
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   border: 1px solid var(--border-light);
   background-color: var(--bg-quaternary);
+  opacity: 1 !important;
+  filter: alpha(opacity=100); /* IE 兼容 */
   
   .el-dialog__header {
     background-color: var(--bg-tertiary);
@@ -1984,6 +2028,9 @@ body, html {
   .el-dialog__body {
     padding: 20px;
     color: var(--text-secondary);
+    background-color: var(--bg-quaternary) !important;
+    opacity: 1 !important;
+    filter: alpha(opacity=100); /* IE 兼容 */
   }
   
   .el-dialog__footer {

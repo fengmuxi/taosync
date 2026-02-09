@@ -777,9 +777,58 @@ class JobTask:
         """
         srcPath = self.job['srcPath']
         jobExclude = self.job['exclude']
-        includeRegex = self.job['include_regex']
-        wantSpec = self.job['possess']
-        strmSpec = self.job['strm_nfo']
+        includeRegex = None
+        wantSpec = None
+        
+        # 只在STRM模式下处理正则表达式字段
+        isStrmMode = self.job['method'] == 3
+        
+        # 处理包含正则表达式字段（用于判断文件是否需要同步）
+        if self.job['include_regex'] is not None and self.job['include_regex'].strip():
+            try:
+                includeRegex = re.compile(self.job['include_regex'])
+                print(f"包含正则表达式编译成功: {self.job['include_regex']}")
+                logger = logging.getLogger()
+                logger.info(f"包含正则表达式编译成功: {self.job['include_regex']}")
+            except Exception as e:
+                logger = logging.getLogger()
+                error_msg = f"包含正则表达式编译失败: {self.job['include_regex']}, 错误: {e}"
+                print(error_msg)
+                logger.error(error_msg)
+                includeRegex = None
+        else:
+            includeRegex = None
+        
+        # 只在STRM模式下处理需要规则字段（用于STRM刮削文件匹配）
+        if isStrmMode and self.job['possess'] is not None and self.job['possess'].strip():
+            try:
+                wantSpec = re.compile(self.job['possess'])
+                print(f"需要规则正则编译成功: {self.job['possess']}")
+                logger = logging.getLogger()
+                logger.info(f"需要规则正则编译成功: {self.job['possess']}")
+            except Exception as e:
+                logger = logging.getLogger()
+                error_msg = f"需要规则正则编译失败: {self.job['possess']}, 错误: {e}"
+                print(error_msg)
+                logger.error(error_msg)
+                wantSpec = None
+        else:
+            wantSpec = None
+            
+        # 处理刮削文件正则表达式字段
+        strmSpec = None
+        if self.job['strm_nfo'] is not None and self.job['strm_nfo'].strip():
+            try:
+                strmSpec = re.compile(self.job['strm_nfo'])
+                print(f"刮削文件正则表达式编译成功: {self.job['strm_nfo']}")
+                logger = logging.getLogger()
+                logger.info(f"刮削文件正则表达式编译成功: {self.job['strm_nfo']}")
+            except Exception as e:
+                logger = logging.getLogger()
+                error_msg = f"刮削文件正则表达式编译失败: {self.job['strm_nfo']}, 错误: {e}"
+                print(error_msg)
+                logger.error(error_msg)
+                strmSpec = None
         strmPath = self.job['strm_path']
         spec = None
         if jobExclude is not None:
